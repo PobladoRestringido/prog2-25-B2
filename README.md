@@ -14,11 +14,12 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 
 ## Requisitos
 [//]: # (Indicad aquí los requisitos de vuestra aplicación, así como el alumno responsable de cada uno de ellos)
-* Permitirá descargar una foto del mapa de la zona seleccionada (haciendo uso de la API de Google Maps).  (Adrian Díez) 
+
+* Permitirá descargar una foto del mapa de la zona seleccionada (haciendo uso de la API de Google Maps). (Adrian Díez) 
 
 • Redirigirá al usuario directamente a la url correspondiente de Google Maps, si éste así lo desea. (Sama Al Adib) 
 
-• Permitirá al usuario filtrar los distintos inmuebles especificando características como el precio, la zona, el tamaño, tipo de alquiler, capacidad (en personas), etc.  (Blanca Xifra) 
+• Permitirá al usuario filtrar los distintos inmuebles especificando características como el precio, la zona, el tamaño, tipo de alquiler, capacidad (en personas), etc. (Blanca Xifra) 
 
 • Permitirá al usuario iniciar sesión y registrarse. (Blanca Xifra) 
 
