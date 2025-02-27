@@ -5,6 +5,6 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 
 * (Coordinador) [Pablo Reig Sánchez](https://github.com/PobladoRestringido)
 * [Adrián Díez Agulló](https://github.com/Adrian-Diez-Agullo)
-* [Nombre 3 Apellido 3 Apellido 3](https://github.com/alumno3)
-* [Nombre 4 Apellido 4 Apellido 4](https://github.com/alumno4)
-* [Nombre 5 Apellido 5 Apellido 5](https://github.com/alumno5)
+* [Lucía Monteagudo Castellanos](https://github.com/Luciamcs)
+* [David Muñoz Torró](https://github.com/oppangangnamsta)
+* [Blanca Xifra Melendo](https://github.com/blancaxifra)
