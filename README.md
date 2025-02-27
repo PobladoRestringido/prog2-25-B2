@@ -8,3 +8,4 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 * [Lucía Monteagudo Castellanos](https://github.com/Luciamcs)
 * [David Muñoz Torró](https://github.com/oppangangnamsta)
 * [Blanca Xifra Melendo](https://github.com/blancaxifra)
+* [Sama Al Adib Hawari](https://github.com/Sama14b)
