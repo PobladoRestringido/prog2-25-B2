@@ -35,4 +35,13 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 
 * Emitirá informes en formato PDF de los inmuebles guardados, con fotografía incluída. (David Muñoz) 
 
-* Permitirá conceder y revocar permisos a los distintos usuarios del sistema (compradores/vendedores, administradores), controlando el nivel de seguridad de los usuarios. (David Muñoz) 
+* Permitirá conceder y revocar permisos a los distintos usuarios del sistema (compradores/vendedores, administradores), controlando el nivel de seguridad de los usuarios. (David Muñoz)
+
+## Instrucciones de instalación y ejecución
+[//]: # (Indicad aquí qué habría que hacer para ejecutar vuestra aplicación)
+*Under construction*
+
+## Resumen de la API
+[//]: # (Cuando tengáis la API, añadiréis aquí la descripción de las diferentes llamadas.)
+[//]: # (Para la evaluación por pares, indicaréis aquí las diferentes opciones de vuestro menú textual, especificando para qué sirve cada una de ellas)
+*Under construction*
