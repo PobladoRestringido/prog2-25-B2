@@ -23,7 +23,9 @@ class Inmueble(ABC):
         El constructor de la clase
     """
 
-    def __init__(self, nombre : str, descripcion : str, habitaciones : list['Habitacion', ...], precio : float, zona : 'Zona') -> None:
+    contador_inmuebles = 0 # usado para asignar un identificador a cada inmueble
+
+    def __init__(self, duenyo: 'Persona', habitaciones : list['Habitacion', ...], zona : 'ZonaGeografica') -> None:
         """
         Metodo constructor de la clase Inmueble
 
@@ -44,10 +46,10 @@ class Inmueble(ABC):
         zona : Zona
             la zona geográfica a la que pertenece el inmueble
         """
-        self.__nombre = nombre
-        self.__descripcion = descripcion
+        self.__id : int = type(self).contador_inmuebles
+        type(self).contador_inmuebles+=1
+        self.__duenyo = duenyo
         self.__habitaciones = habitaciones
-        self.__precio = precio
         self.__zona = zona
 
     def __len__(self):
