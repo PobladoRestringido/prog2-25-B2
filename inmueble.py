@@ -73,5 +73,3 @@ class Inmueble(ABC):
         """
         return f'Inmueble: {self.__nombre}\nDescripcion: {self.__descripcion}\nNº habitaciones: {}'
 
-'''
-'''
