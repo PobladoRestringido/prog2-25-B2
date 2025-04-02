@@ -1,4 +1,4 @@
-from habitacion import Habitacion
+from modelos.habitacion import Habitacion
 
 class Salon:
     def __init__(self):
