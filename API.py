@@ -1,9 +1,9 @@
 
 from flask import Flask, request #Importamos la biblioteca
 
-app = Flask(__name__)
+app = Flask(__name__) #Creamos la aplicación Flask
 
-#INMUEBLES DE EJEMPLO,ESTO SE QUITARÁ CUANDO CREEMOS INMUEBLES Y SE IMPORTARÁ
+#INMUEBLES DE EJEMPLO,ESTO SE QUITARÁ (dejando un diccionario vacío)CUANDO CREEMOS INMUEBLES Y SE IMPORTARÁ
 inmuebles = {
     "1": {
         "dueño": "María García",
@@ -33,28 +33,66 @@ inmuebles = {
 }
 
 
-
-@app.route('/')
+@app.route('/')#Ruta inicial de la api
 def hola():
+    '''
+       Función de inicio de la API. Esta función maneja la ruta raíz y
+       devuelve un mensaje de bienvenida.
+
+       Devuélve
+       --------------
+           str: Un mensaje de texto dando la bienvenida a la API.
+    '''
     return 'Bienvenido a la API de inmuebles'
 
 
-@app.route('/inmuebles', methods=['GET'])
+@app.route('/inmuebles', methods=['GET'])  # Ruta para ver todos los inmuebles
 def get_inmuebles():
-    resultado = [{"id": id, **datos} for id, datos in inmuebles.items()]
+    '''
+        Función que obtiene y devuelve la lista de todos los inmuebles registrados.
+
+        Devuelve
+        --------------
+            list[dict]: Una lista de diccionarios donde cada diccionario contiene
+                        los detalles de un inmueble (id, dueño, habitaciones, zona).
+
+            código de estado: 200 si la solicitud funciona sin ningún problema.
+    '''
+    resultado = []
+    for id, datos in inmuebles.items():
+        inmueble = {"id": id}
+        for clave, valor in datos.items():
+            inmueble[clave] = valor
+        resultado.append(inmueble)
+
     return resultado, 200
 
 
-@app.route('/inmuebles/<id>', methods=['GET'])
-def get_inmueble_id(id):
+@app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
+def get_inmueble_id(id:int):
+    '''
+    Función que nos muestra un inmueble por su ID
+
+    Parámetros
+    ------------
+    id:ID del inmueble que queramos consultar
+
+    Devuélve
+    ------------
+    Diccionario con los detalles del inmueble si existe, si no existe nos salta un error.
+    '''
+
     try:
         inmueble = inmuebles[id]
-        return {"id": id, **inmueble}, 200
+        inmueble_id = {"id": id}
+        for clave, valor in inmueble.items():
+            inmueble_id[clave] = valor
+        return inmueble_id, 200
     except KeyError:
-        return f'Inmueble {id} No encontrado', 404
+        return f'Inmueble {id} no encontrado', 404
 
 
-@app.route('/inmuebles/<id>', methods=['POST'])
+@app.route('/inmuebles/<id>', methods=['POST'])#Crea un nuevo inmueble
 def añadir_inmuebles(id):
     if id not in inmuebles:
         datos = request.get_json()
