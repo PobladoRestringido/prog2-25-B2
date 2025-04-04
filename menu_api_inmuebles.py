@@ -1,14 +1,25 @@
 '''
-NOTA:
-Este menu se tendrá que juntar con los menus de las otras APIs  para hacer un menu común con todas las opciones
-(de momento lo dejo así para tener localizada cada parte por si hay errores o algo para cambiar)
+    NOTA:
+    Este menu se tendrá que juntar con los menus de las otras APIs  para hacer un menu común con todas las opciones
+    (de momento lo dejo así para tener localizada cada parte por si hay errores o algo para cambiar)
 '''
 
-import requests
+import requests #importa la biblioteca request
 
-API_URL = "http://127.0.0.1:5000/inmuebles"
+API_URL = 'http://127.0.0.1:5000/inmuebles' #URL de la base de la API (inmuebles)
 
 def menu():
+    '''
+        Función que muestra en un bucle las opciones de los inmuebles en un menú
+        LLama a la función que se seleccione
+
+        Devuelve
+        ---------------
+        -Imprime una cadena de texto (str) según el número que le introduzcamos
+            llama a la función correspondiente, si le introducimos una opción no
+            válida nos devolverá un str indicándonos que no es válida y que se vuelva a elegir
+    '''
+
     while True:
         print("\n--- MENÚ DE INMUEBLES ---")
         print("1. Ver todos los inmuebles")
@@ -38,6 +49,15 @@ def menu():
 
 
 def ver_todos_inmuebles():
+    '''
+        Función que nos permitirá ver todos los inmuebles utilizando el código de la API inmuebles
+
+        Devuelve
+        -------------
+            -diccionario: Un diccionario por cada inmueble con su información,
+                            si no encuentra el inmueble muestra un mensaje de error
+    '''
+
     response = requests.get(API_URL)
     if response.status_code == 200:
         inmuebles = response.json()
@@ -48,6 +68,18 @@ def ver_todos_inmuebles():
 
 
 def ver_inmueble_id():
+    '''
+        Función que pide un "id" para mostrar su respectivo inmueble realizando una solicitud GET
+        a la API inmueble
+
+        Si la solicitud se ejecuta sin ningún problema el estado del código será 200
+
+        Devuélve
+        ------------
+            -Diccionario: Diccionario con los datos del inmueble que hemos seleccionado
+                a través del "id"
+    '''
+    
     inmueble_id = input("Introduce el ID del inmueble: ")
     response = requests.get(f"{API_URL}/{inmueble_id}")
     if response.status_code == 200:
