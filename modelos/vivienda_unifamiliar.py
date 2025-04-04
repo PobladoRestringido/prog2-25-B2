@@ -1,4 +1,4 @@
-from inmueble import Inmueble
+from modelos.inmueble import Inmueble
 from typing import Optional
 
 class ViviendaUnifamiliar(Inmueble):
