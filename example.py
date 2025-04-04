@@ -1,11 +1,19 @@
+"""
+El propósito de este fichero es mostrar un menú interactivo mediante el cual el usuario pueda interactuar con la API
+sin necesidad de saber nada sobre programación
+"""
+
 from auth.auth import registrar_usuario, iniciar_sesion, usuarios_registrados
 from utils.filtros import filtrar_inmuebles
 
-def mostrar_menu_principal():
+def mostrar_menu_principal() -> None:
+    """
+    Función que muestra el menú principal con todas las cosas que puede hacer el usuario
+    """
     print("\n--- MENÚ ---")
     print("1. Registrar usuario")
     print("2. Iniciar sesión")
-    print("3. Ver usuarios registrados")
+    print("3. Ver publicaciones de inmuebles")
     print("4. Salir")
 
 def mostrar_menu_comprador():
