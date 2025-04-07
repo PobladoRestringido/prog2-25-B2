@@ -1,6 +1,8 @@
 from auth.auth import registrar_usuario, iniciar_sesion, usuarios_registrados
 from utils.filtros import filtrar_inmuebles
 
+resenyas = {}
+
 def mostrar_menu_principal():
     print("\n--- MENÚ ---")
     print("1. Registrar usuario")
@@ -8,12 +10,29 @@ def mostrar_menu_principal():
     print("3. Ver usuarios registrados")
     print("4. Salir")
 
-def mostrar_menu_comprador():
-    print("\n--- MENÚ DEL COMPRADOR ---")
-    print("1. Ver inmuebles disponibles (filtrar)")
-    print("2. Reservar o comprar inmueble")
-    print("3. Ver mis reservas")
-    print("4. Cerrar sesión")
+def añadir_resenya(id_inmueble, usuario):
+    """ Función para añadir una reseña a un inmueble """
+    resenya = input("Escribe tu reseña a continuación: ")
+
+    # Si el inmueble ya tiene reseñas, las agregamos a la lista
+    if id_inmueble not in resenyas:
+        resenyas[id_inmueble] = []
+
+    resenyas[id_inmueble].append({
+        'usuario': usuario.nombre,
+        'reseña': resenya
+    })
+    print("Reseña añadida correctamente.")
+
+
+def ver_resenyas(id_inmueble):
+    """ Función para ver las reseñas de un inmueble """
+    if id_inmueble in resenyas:
+        print(f"\nReseñas de la vivienda {id_inmueble}:")
+        for resenya in resenyas[id_inmueble]:
+            print(f"- {resenya['usuario']}: {resenya['reseña']}")
+    else:
+        print("Este inmueble aún no tiene reseñas.")
 
 def menu_comprador(usuario, publicaciones):
     reservas = []  # Puedes vincular esto al usuario si implementas base de datos
@@ -58,13 +77,42 @@ def menu_comprador(usuario, publicaciones):
                 print("Entrada inválida. Intenta de nuevo.")
 
         elif opcion == "2":
-            print(">> Aquí se podría implementar lógica para reservar o comprar.")
-            # Podrías permitir elegir una publicación por ID
+            if not publicaciones:
+                print("No hay publicaciones disponibles para reservar.")
+                continue
+
+            print("\nInmuebles disponibles:")
+            for pub in publicaciones:
+                print(f"ID: {pub['id']} - {pub['titulo']} - {pub['precio']}€")
+
+            id_reserva = input("Introduce el ID del inmueble que quieres reservar: ")
+
+            seleccionado = next((p for p in publicaciones if p["id"] == id_reserva), None)
+            if seleccionado:
+                usuario.reservas.append(seleccionado)
+                print("Inmueble reservado con éxito.")
+            else:
+                print("ID no válido.")
 
         elif opcion == "3":
-            print(">> Aquí podrías mostrar las reservas vinculadas al usuario.")
+            if usuario.reservas:
+                print("\n📦 Tus reservas:")
+                for r in usuario.reservas:
+                    print(f"- {r['titulo']} ({r['zona']}) - {r['precio']}€")
+            else:
+                print("No tienes reservas todavía.")
 
         elif opcion == "4":
+            # Aquí añadimos una reseña
+            id_inmueble = input("Introduce el ID del inmueble para añadir las reseñas: ")
+            añadir_resenya(id_inmueble, usuario)
+
+        elif opcion == "5": # accedo con el id del inmueble
+            # Ver las reseñas de un inmueble
+            id_inmueble = input("Introduce el ID del inmueble para ver las reseñas: ")
+            ver_resenyas(id_inmueble)
+
+        elif opcion == "6":
             print("Sesión cerrada.")
             break
 
@@ -121,6 +169,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-'''
-kbbjb j 
-'''
