@@ -34,12 +34,21 @@ def ver_resenyas(id_inmueble):
     else:
         print("Este inmueble aún no tiene reseñas.")
 
-def menu_comprador(usuario, publicaciones):
+def mostrar_menu_comprador():
+    print("\n--- MENÚ DEL COMPRADOR ---")
+    print("1. Ver inmuebles disponibles (filtrar)")
+    print("2. Reservar o comprar inmueble")
+    print("3. Ver mis reservas")
+    print("4. Añadir mis propias reseñas")
+    print("5. Ver todas las reseñas")
+    print("6. Cerrar sesión")
+
+def menu_comprador(usuario, publicaciones, resenyas):
     reservas = []  # Puedes vincular esto al usuario si implementas base de datos
 
     while True:
         mostrar_menu_comprador()
-        opcion = input("Selecciona una opción (1-4): ")
+        opcion = input("Selecciona una opción (1-6): ")
 
         if opcion == "1":
             if not publicaciones:
@@ -112,6 +121,23 @@ def menu_comprador(usuario, publicaciones):
             id_inmueble = input("Introduce el ID del inmueble para ver las reseñas: ")
             ver_resenyas(id_inmueble)
 
+            resenya = input("Añade a continuación tu reseña: ")
+            if resenya.strip():
+                resenyas.append(f"{usuario}: {resenya.strip()}")
+                print("Reseña añadida correctamente.")
+            else:
+                print("La reseña no puede estar vacía.")
+
+        elif opcion == "5":
+            if resenyas:
+                print("\n---Reseñas de las viviendas---")
+                i = 1
+                for r in resenyas:
+                    print(str(i) + ". " + r)
+                    i += 1
+            else:
+                print("No hay reseñas todavía")
+
         elif opcion == "6":
             print("Sesión cerrada.")
             break
@@ -121,11 +147,13 @@ def menu_comprador(usuario, publicaciones):
 
 def main():
     publicaciones = []  # Aquí puedes cargar publicaciones de prueba
+    resenyas = [] # Lista global de reseñas, compartida entre todos los usuarios
+
     while True:
         mostrar_menu_principal()
         opcion = input("Selecciona una opción (1-4): ")
 
-        if opcion == "1":
+        if opcion == "1": # registro de usuario
             nombre = input("Nombre de usuario: ")
             contrasenya = input("Contraseña: ")
             tipo = input("Tipo de usuario (comprador, vendedor, administrador): ").lower()
@@ -135,7 +163,7 @@ def main():
             except ValueError as e:
                 print("Error:", e)
 
-        elif opcion == "2":
+        elif opcion == "2": # iniciar sesión
             nombre = input("Nombre de usuario: ")
             contrasenya = input("Contraseña: ")
             try:
@@ -168,4 +196,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
