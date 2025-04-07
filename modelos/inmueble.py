@@ -71,4 +71,6 @@ class Inmueble(ABC):
         : str
             un string de varias lineas exponiendo las caracteristicas del inmueble
         """
+
         return f'Inmueble: {self.__nombre}\nDescripcion: {self.__descripcion}\nNº habitaciones: {len(self.__habitaciones)}'
+
