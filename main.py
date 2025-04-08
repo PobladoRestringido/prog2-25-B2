@@ -1,7 +1,8 @@
 from auth.auth import registrar_usuario, iniciar_sesion, usuarios_registrados
 from utils.filtros import filtrar_inmuebles
 
-resenyas = {}
+from API import inmuebles
+resenyas = {} # clave: id_inmueble, valor: lista de dicts con reseñas
 
 def mostrar_menu_principal():
     print("\n--- MENÚ ---")
@@ -105,38 +106,35 @@ def menu_comprador(usuario, publicaciones, resenyas):
 
         elif opcion == "3":
             if usuario.reservas:
-                print("\n📦 Tus reservas:")
+                print("\n Tus reservas:")
                 for r in usuario.reservas:
                     print(f"- {r['titulo']} ({r['zona']}) - {r['precio']}€")
             else:
                 print("No tienes reservas todavía.")
 
+
         elif opcion == "4":
-            # Aquí añadimos una reseña
-            id_inmueble = input("Introduce el ID del inmueble para añadir las reseñas: ")
+
+            id_inmueble = input("Introduce el ID del inmueble para añadir la reseña: ")
+
+            if id_inmueble not in inmuebles:
+                print("Ese inmueble no existe.")
+
+                continue
+
             añadir_resenya(id_inmueble, usuario)
 
-        elif opcion == "5": # accedo con el id del inmueble
-            # Ver las reseñas de un inmueble
-            id_inmueble = input("Introduce el ID del inmueble para ver las reseñas: ")
-            ver_resenyas(id_inmueble)
-
-            resenya = input("Añade a continuación tu reseña: ")
-            if resenya.strip():
-                resenyas.append(f"{usuario}: {resenya.strip()}")
-                print("Reseña añadida correctamente.")
-            else:
-                print("La reseña no puede estar vacía.")
 
         elif opcion == "5":
-            if resenyas:
-                print("\n---Reseñas de las viviendas---")
-                i = 1
-                for r in resenyas:
-                    print(str(i) + ". " + r)
-                    i += 1
-            else:
-                print("No hay reseñas todavía")
+
+            id_inmueble = input("Introduce el ID del inmueble para ver las reseñas: ")
+
+            if id_inmueble not in inmuebles:
+                print("Ese inmueble no existe.")
+
+                continue
+
+            ver_resenyas(id_inmueble)
 
         elif opcion == "6":
             print("Sesión cerrada.")
@@ -147,7 +145,6 @@ def menu_comprador(usuario, publicaciones, resenyas):
 
 def main():
     publicaciones = []  # Aquí puedes cargar publicaciones de prueba
-    resenyas = [] # Lista global de reseñas, compartida entre todos los usuarios
 
     while True:
         mostrar_menu_principal()
@@ -172,7 +169,7 @@ def main():
 
                 # Solo mostramos el menú si es comprador
                 if usuario.__class__.__name__.lower() == "comprador":
-                    menu_comprador(usuario, publicaciones)
+                    menu_comprador(usuario, publicaciones, resenyas)
                 else:
                     print("Este tipo de usuario no tiene menú implementado todavía.")
 
