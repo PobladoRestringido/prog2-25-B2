@@ -4,7 +4,10 @@
     (de momento lo dejo así para tener localizada cada parte por si hay errores o algo para cambiar)
 '''
 
+import random
 import requests #importa la biblioteca request
+from comentarios_inmu import comentarios_casas, comentarios_pisos
+
 
 API_URL = 'http://127.0.0.1:5000/inmuebles' #URL de la base de la API (inmuebles)
 
@@ -27,9 +30,10 @@ def menu():
         print("3. Añadir un nuevo inmueble")
         print("4. Eliminar un inmueble")
         print("5. Actualizar un inmueble")
-        print("6. Salir")
+        print("6. Ver comentarios de un inmueble")
+        print("7. Salir")
 
-        opcion = input("Elige una opción (1-6): ")
+        opcion = input("Elige una opción (1-7): ")
 
         if opcion == '1':
             ver_todos_inmuebles()
@@ -42,6 +46,8 @@ def menu():
         elif opcion == '5':
             actualizar_inmueble()
         elif opcion == '6':
+            ver_comentarios_inmueble()
+        elif opcion == '7':
             print("¡Hasta luego!")
             break
         else:
@@ -151,6 +157,35 @@ def actualizar_inmueble():
         print(response.json()["mensaje"])
     else:
         print(f"Error al actualizar el inmueble: {response.text}")
+
+
+def ver_comentarios_inmueble():
+    '''
+        Función que muestra los comentarios de un inmueble por su ID
+
+        Devuelve
+        -------------
+            -Imprime los comentarios del inmueble correspondiente
+    '''
+    inmueble_id = input("Introduce el ID del inmueble para ver sus comentarios: ")
+    response = requests.get(f"{API_URL}/{inmueble_id}")
+    if response.status_code == 200:
+        inmueble = response.json()
+
+        # Determinar si es casa o piso y seleccionar los comentarios adecuados
+        if 'jardin' in inmueble or 'tiene_piscina' in inmueble:
+            comentarios = comentarios_casas
+        else:
+            comentarios = comentarios_pisos
+
+        comentarios_aleatorios = random.sample(comentarios, 5)
+        # Mostrar los comentarios seleccionados
+        print("\nComentarios aleatorios para este inmueble:")
+        for comentario in comentarios_aleatorios:
+            print(f"- {comentario}")
+    else:
+        print(f"Error: Inmueble con ID {inmueble_id} no encontrado.")
+
 
 if __name__ == "__main__":
     menu()

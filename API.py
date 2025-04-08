@@ -1,4 +1,5 @@
-
+import random
+from comentarios_inmu import comentarios_casas, comentarios_pisos
 from flask import Flask, request #Importamos la biblioteca
 
 app = Flask(__name__) #Creamos la aplicación Flask
@@ -29,6 +30,41 @@ inmuebles = {
         'dueño': 'Ana Torres',
         'habitacion': 2,
         'zona': 'Oeste'
+    },
+    '6': {
+        'dueño': 'Raúl Gómez',
+        'habitaciones': 3,
+        'zona': 'Noreste',
+        'tiene_piscina': False,
+        'jardin': None
+    },
+    '7': {
+        'dueño': 'Miguel Rodríguez',
+        'habitaciones': 5,
+        'zona': 'Área metropolitana',
+        'tiene_piscina': True,
+        'jardin': None
+    },
+    '8': {
+        'dueño': 'Sofia Díaz',
+        'habitaciones': 4,
+        'zona': 'Noroeste',
+        'tiene_piscina': True,
+        'jardin': None
+    },
+    '9': {
+        'dueño': 'Laura Martínez',
+        'habitaciones': 2,
+        'zona': 'Este',
+        'tiene_piscina': False,
+        'jardin': None
+    },
+    '10': {
+        'dueño': 'Ana Torres' ,
+        'habitaciones': 3,
+        'zona': 'Sur' ,
+        'tiene_piscina': False,
+        'jardin': None
     }
 }
 
@@ -191,6 +227,28 @@ def eliminar_inmueble(id:int):
     else:
         return f'Inmueble {id} No encontrado', 404
 
+@app.route('/inmueble/<id>/comentarios',methods=['GET'])
+def mostrar_comentarios(id:int):
+    inmueble = inmuebles.get(id)
+
+    if not inmueble:
+        return {'error': 'Inmueble no encontrado'}, 404
+
+    if 'jardin' in inmueble or 'tiene_piscina' in inmueble:
+        tipo = 'casa'
+        comentarios = random.sample(comentarios_casas, 5)
+    else:
+        tipo = 'piso'
+        comentarios = random.sample(comentarios_pisos, 5)
+
+    inmueble = {'id': id}
+    for clave, valor in inmueble.items():
+        inmueble[clave] = valor
+
+    inmueble['tipo'] = tipo
+    inmueble['comentarios'] = comentarios
+
+    return inmueble
 
 if __name__ == '__main__':
     app.run(debug=True)
