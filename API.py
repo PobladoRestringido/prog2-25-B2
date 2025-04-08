@@ -9,12 +9,13 @@ inmuebles = {
     '1': {
         'dueño': 'María García',
         'habitacion': 3,
-        'zona': 'Centro'
+        'zona': 'Centro',
     },
     '2': {
         'dueño': 'Juan Pérez',
         'habitacion': 2,
         'zona': 'Norte'
+
     },
     '3': {
         'dueño': 'Laura Martínez',
