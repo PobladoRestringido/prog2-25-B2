@@ -10,62 +10,81 @@ inmuebles = {
         'dueño': 'María García',
         'habitacion': 3,
         'zona': 'Centro',
+        'Precio de venta': 350.000,
+        'Precio de alquiler/por mes': 500
     },
     '2': {
         'dueño': 'Juan Pérez',
         'habitacion': 2,
-        'zona': 'Norte'
-
+        'zona': 'Norte',
+        'Precio de venta': 200.000,
+        'Precio de alquiler/por mes': 350
     },
     '3': {
         'dueño': 'Laura Martínez',
         'habitacion': 4,
-        'zona': 'Sur'
+        'zona': 'Sur',
+        'Precio de venta': 250.000,
+        'Precio de alquiler/por mes': 425
     },
     '4': {
         'dueño': 'Carlos López',
         'habitacion': 1,
-        'zona': 'Este'
+        'zona': 'Este',
+        'Precio de venta': 375.000,
+        'Precio de alquiler/por mes': 360
     },
     '5': {
         'dueño': 'Ana Torres',
         'habitacion': 2,
-        'zona': 'Oeste'
+        'zona': 'Oeste',
+        'Precio de venta': 440.000,
+        'Precio de alquiler/por mes': 490
     },
     '6': {
         'dueño': 'Raúl Gómez',
         'habitaciones': 3,
         'zona': 'Noreste',
         'tiene_piscina': False,
-        'jardin': None
+        'jardin': None,
+        'Precio de venta': 240.000,
+        'Precio de alquiler/por mes': 480
     },
     '7': {
         'dueño': 'Miguel Rodríguez',
         'habitaciones': 5,
         'zona': 'Área metropolitana',
         'tiene_piscina': True,
-        'jardin': None
+        'jardin': None,
+        'Precio de venta': 490.000,
+        'Precio de alquiler/por mes': 600
     },
     '8': {
         'dueño': 'Sofia Díaz',
         'habitaciones': 4,
         'zona': 'Noroeste',
         'tiene_piscina': True,
-        'jardin': None
+        'jardin': None,
+        'Precio de venta': 460.000,
+        'Precio de alquiler/por mes': 500
     },
     '9': {
         'dueño': 'Laura Martínez',
         'habitaciones': 2,
         'zona': 'Este',
         'tiene_piscina': False,
-        'jardin': None
+        'jardin': None,
+        'Precio de venta': 300.000,
+        'Precio de alquiler/por mes': 400
     },
     '10': {
         'dueño': 'Ana Torres' ,
         'habitaciones': 3,
         'zona': 'Sur' ,
         'tiene_piscina': False,
-        'jardin': None
+        'jardin': None,
+        'Precio de venta': 390.000,
+        'Precio de alquiler/por mes': 470
     }
 }
 
