@@ -47,15 +47,41 @@ def ver_resenyas(id_inmueble):
 
 
 def aplicar_filtros():
-    print("\nPuedes filtrar por zona o número de habitaciones.")
+    print("\nPuedes filtrar por zona, número de habitaciones o por precio.")
+
+    print("\n¿Estás buscando para compra o alquiler?")
+    tipo_propiedad = input("Selecciona 'compra' o 'alquiler': ").lower()
+
+    if tipo_propiedad not in ['compra', 'alquiler']:
+        print("Tipo de propiedad no válido. Solo se permite 'compra' o 'alquiler'.")
+        return
+
     zona = input("Filtrar por zona (o Enter para ignorar): ").lower()
+
     habitaciones = input("Filtrar por número de habitaciones (o Enter para ignorar): ")
+
+    precio_max = input(
+        f"Filtrar inmuebles para {tipo_propiedad} con precios menores de: (deja en blanco para no filtrar): ")
+    try:
+        if precio_max:
+            precio_max = float(precio_max)
+        else:
+            precio_max = None
+    except ValueError:
+        print("Entrada inválida para precio.")
+        return
 
     encontrados = False
     for id_inmueble, datos in inmuebles.items():
+
+        precio_key = f"Precio de {tipo_propiedad}/por mes" if tipo_propiedad == "alquiler" else "Precio de venta"
+
+        cumple_precio = not precio_max or datos.get(precio_key, float('inf')) <= precio_max
+
         cumple_zona = not zona or datos.get("zona", "").lower() == zona
+
         cumple_hab = not habitaciones or str(datos.get("habitaciones", datos.get("habitacion", ""))) == habitaciones
-        if cumple_zona and cumple_hab:
+        if cumple_zona and cumple_hab and cumple_precio:
             encontrados = True
             print(f"\nID: {id_inmueble}")
             for clave, valor in datos.items():
