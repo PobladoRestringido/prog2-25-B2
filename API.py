@@ -8,35 +8,35 @@ app = Flask(__name__) #Creamos la aplicación Flask
 inmuebles = {
     '1': {
         'dueño': 'María García',
-        'habitacion': 3,
+        'habitaciones': 3,
         'zona': 'Centro',
         'Precio de venta': 350.000,
         'Precio de alquiler/por mes': 500
     },
     '2': {
         'dueño': 'Juan Pérez',
-        'habitacion': 2,
+        'habitaciones': 2,
         'zona': 'Norte',
         'Precio de venta': 200.000,
         'Precio de alquiler/por mes': 350
     },
     '3': {
         'dueño': 'Laura Martínez',
-        'habitacion': 4,
+        'habitaciones': 4,
         'zona': 'Sur',
         'Precio de venta': 250.000,
         'Precio de alquiler/por mes': 425
     },
     '4': {
         'dueño': 'Carlos López',
-        'habitacion': 1,
+        'habitaciones': 1,
         'zona': 'Este',
         'Precio de venta': 375.000,
         'Precio de alquiler/por mes': 360
     },
     '5': {
         'dueño': 'Ana Torres',
-        'habitacion': 2,
+        'habitaciones': 2,
         'zona': 'Oeste',
         'Precio de venta': 440.000,
         'Precio de alquiler/por mes': 490
@@ -173,13 +173,13 @@ def añadir_inmuebles(id:int):
     if id not in inmuebles:
         datos = request.get_json()
 
-        necesario = {'dueño', 'habitacion', 'zona'}
+        necesario = {'dueño', 'habitaciones', 'zona'}
         if not datos or not necesario.issubset(datos.keys()):
-            return {'error': 'Faltan campos obligatorios (dueño, habitacion, zona)'}, 400
+            return {'error': 'Faltan campos obligatorios (dueño, habitaciones, zona)'}, 400
 
         inmuebles[id] = {
             'dueño': datos['dueño'],
-            'habitacion': datos['habitacion'],
+            'habitaciones': datos['habitaciones'],
             'zona': datos['zona']
         }
         return {'mensaje': f'Inmueble {id} añadido correctamente'}, 200
@@ -208,13 +208,13 @@ def actualizar_inmueble(id:int):
 
         datos = request.get_json()
 
-        requerido = {"dueño", "habitacion", "zona"}
+        requerido = {"dueño", "habitaciones", "zona"}
         if not datos or not requerido.issubset(datos.keys()):
-            return {"error": "Faltan campos obligatorios (dueño, habitacion, zona)"}, 400
+            return {"error": "Faltan campos obligatorios (dueño, habitaciones, zona)"}, 400
 
         inmuebles[id] = {
             "dueño": datos["dueño"],
-            "habitacion": datos["habitacion"],
+            "habitaciones": datos["habitaciones"],
             "zona": datos["zona"]
         }
         return {"mensaje": f"Inmueble {id} actualizado correctamente"}, 200
