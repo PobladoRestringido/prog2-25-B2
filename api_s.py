@@ -1,5 +1,8 @@
 from flask import Flask, jsonify, request, Response
 from modelos.usuario import Usuario
+from modelos.comprador import Comprador
+from modelos.administrador import Administrador
+from modelos.vendedor import Vendedor
 
 app = Flask(__name__)
 # datos de prueba (base de datos)
@@ -15,7 +18,7 @@ def home():
 
 usuarios_registrados : list[Usuario, ...] = []
 # inicio sesión
-@app.route('/usuario', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def iniciar_sesion() -> tuple[Response, int]:
     """
     Verifica las credenciales de un usuario para iniciar sesión.
@@ -30,6 +33,7 @@ def iniciar_sesion() -> tuple[Response, int]:
     - JSON con la representación del usuario y HTTP 200 si el log-in es
     correcto.
     - JSON con un mensaje de error y HTTP 401 si el log-in falla.
+    - JSON con un mensaje de error y HTTP 400 si faltan las credenciales.
     """
     data = request.get_json()
     nombre = data.get('nombre')
@@ -46,6 +50,62 @@ def iniciar_sesion() -> tuple[Response, int]:
 
     return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
             401)
+
+from flask import Flask, request, jsonify, Response
+
+app = Flask(__name__)
+
+# Suppose usuarios_registrados is a list for demonstration purposes.
+usuarios_registrados = []
+
+def is_valid_tipo(tipo: str) -> bool:
+    return tipo in {"comprador", "vendedor", "administrador"}
+
+@app.route('/register', methods=['POST'])
+def registrar_usuario() -> tuple[Response, int]:
+    """
+    Registra un nuevo usuario si el nombre no está en uso.
+
+    Parámetros esperados en el JSON:
+        - nombre: nombre de usuario único
+        - contrasenya: clave secreta
+        - tipo: tipo de usuario (comprador, vendedor, administrador)
+
+    Retorna:
+        - JSON con la representación del usuario y HTTP 201 si el sign-up
+        fue correcto.
+        - JSON con un mensaje de error y HTTP 409 si el nombre de usuario
+        ya existe.
+        - JSON con un mensaje de error y HTTP 400 si se pide crear un tipo
+        de usuario inexistente.
+    """
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+    tipo = data.get('tipo')
+
+    # Validación básica de entrada.
+    if not nombre or not contrasenya:
+        return jsonify({'error': 'Faltan credenciales.'}), 400
+
+    # Verificar que el nombre de usuario no esté en uso.
+    for u in usuarios_registrados:
+        if u.nombre == nombre:
+            return (jsonify({'error': 'El nombre de usuario ya está en uso.'}),
+                    409)
+
+    if tipo == "comprador":
+        usuario = Comprador(nombre, contrasenya)
+    elif tipo == "vendedor":
+        usuario = Vendedor(nombre, contrasenya)
+    elif tipo == "administrador":
+        usuario = Administrador(nombre, contrasenya)
+    else:
+        return jsonify({'error': f"Tipo de usuario '{tipo}' no válido."}), 400
+
+    usuarios_registrados.append(usuario)
+    return jsonify({'usuario': usuario}), 201
+
 
 # Obtener todos los inmuebles
 @app.route("/inmuebles", methods=["GET"])
