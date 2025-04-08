@@ -5,9 +5,10 @@
 '''
 
 import random
+import time
 import requests #importa la biblioteca request
 from comentarios_inmu import comentarios_casas, comentarios_pisos
-
+ultimo_acceso = 0
 
 API_URL = 'http://127.0.0.1:5000/inmuebles' #URL de la base de la API (inmuebles)
 
@@ -52,7 +53,6 @@ def menu():
             break
         else:
             print("Opción no válida. Intenta de nuevo.")
-
 
 def ver_todos_inmuebles():
     '''
@@ -185,6 +185,9 @@ def ver_comentarios_inmueble():
             print(f"- {comentario}")
     else:
         print(f"Error: Inmueble con ID {inmueble_id} no encontrado.")
+
+
+
 
 
 if __name__ == "__main__":

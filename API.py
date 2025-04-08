@@ -1,4 +1,6 @@
 import random
+import time
+from openai import OpenAI
 from comentarios_inmu import comentarios_casas, comentarios_pisos
 from flask import Flask, request #Importamos la biblioteca
 
@@ -8,27 +10,27 @@ app = Flask(__name__) #Creamos la aplicación Flask
 inmuebles = {
     '1': {
         'dueño': 'María García',
-        'habitacion': 3,
+        'habitaciones': 3,
         'zona': 'Centro'
     },
     '2': {
         'dueño': 'Juan Pérez',
-        'habitacion': 2,
+        'habitaciones': 2,
         'zona': 'Norte'
     },
     '3': {
         'dueño': 'Laura Martínez',
-        'habitacion': 4,
+        'habitaciones': 4,
         'zona': 'Sur'
     },
     '4': {
         'dueño': 'Carlos López',
-        'habitacion': 1,
+        'habitaciones': 1,
         'zona': 'Este'
     },
     '5': {
         'dueño': 'Ana Torres',
-        'habitacion': 2,
+        'habitaciones': 2,
         'zona': 'Oeste'
     },
     '6': {
@@ -68,6 +70,21 @@ inmuebles = {
     }
 }
 
+
+def deepseek_generatecontent(tipo, habitaciones):
+    # Generar un número aleatorio de metros dentro de un rango razonable
+    dimensiones = random.randint(50, 150)  # Puedes ajustar el rango según tus necesidades
+
+    # Generar el mensaje para Deepseek, todos los inmuebles son nuevos
+    message = client.chat.completions.create(model="deepseek-chat",
+        messages=[
+                    {"role": "system", "content": "Eres un asistente inmobiliario"},
+                    {"role": "user","content": f"Genera un comentario aleatorio acerca de un {tipo} nuevo a la venta. El inmueble tiene {habitaciones} habitaciones y {dimensiones} metros cuadrados. Debe ser un comentario que imite un anuncio inmobiliario de carácter corto, de unos 200 caracteres máximo. No añadas hashtags ni la longitud del mensaje en la respuesta."},
+                    ],
+                    stream=False)
+    return message.choices[0].message.content
+
+client = OpenAI(api_key="sk-02fe7bac884b43478829814148287e55", base_url="https://api.deepseek.com")
 
 @app.route('/')#Ruta inicial de la api
 def hola():
@@ -153,13 +170,13 @@ def añadir_inmuebles(id:int):
     if id not in inmuebles:
         datos = request.get_json()
 
-        necesario = {'dueño', 'habitacion', 'zona'}
+        necesario = {'dueño', 'habitaciones', 'zona'}
         if not datos or not necesario.issubset(datos.keys()):
-            return {'error': 'Faltan campos obligatorios (dueño, habitacion, zona)'}, 400
+            return {'error': 'Faltan campos obligatorios (dueño, habitaciones, zona)'}, 400
 
         inmuebles[id] = {
             'dueño': datos['dueño'],
-            'habitacion': datos['habitacion'],
+            'habitaciones': datos['habitaciones'],
             'zona': datos['zona']
         }
         return {'mensaje': f'Inmueble {id} añadido correctamente'}, 200
@@ -188,13 +205,13 @@ def actualizar_inmueble(id:int):
 
         datos = request.get_json()
 
-        requerido = {"dueño", "habitacion", "zona"}
+        requerido = {"dueño", "habitaciones", "zona"}
         if not datos or not requerido.issubset(datos.keys()):
-            return {"error": "Faltan campos obligatorios (dueño, habitacion, zona)"}, 400
+            return {"error": "Faltan campos obligatorios (dueño, habitaciones, zona)"}, 400
 
         inmuebles[id] = {
             "dueño": datos["dueño"],
-            "habitacion": datos["habitacion"],
+            "habitaciones": datos["habitaciones"],
             "zona": datos["zona"]
         }
         return {"mensaje": f"Inmueble {id} actualizado correctamente"}, 200
@@ -249,6 +266,45 @@ def mostrar_comentarios(id:int):
     inmueble['comentarios'] = comentarios
 
     return inmueble
+
+ultimo_acceso=0
+@app.route('/inmueble/<id>/descripcion',methods=['GET'])
+def mostrar_descripcion(id:int):
+    global ultimo_acceso
+
+
+    if id not in inmuebles:
+        return {'error': 'Inmueble no encontrado'}, 404
+
+
+    inmueble = inmuebles[id]
+    habitaciones = inmueble.get('habitaciones', 0)
+    piscina = inmueble.get('piscina', None)
+    jardin = inmueble.get('jardin', None)
+
+
+    if piscina or jardin:
+        tipo = 'casa'
+    else:
+        tipo = 'piso'
+
+
+    tiempo_actual = time.time()
+
+
+    if (tiempo_actual - ultimo_acceso) < 3600:
+        tiempo_espera = 3600 - (tiempo_actual - ultimo_acceso)
+        return {"error": f"Por favor espera {int(tiempo_espera)} segundos antes de hacer otra solicitud."}, 429
+
+
+    ultimo_acceso = tiempo_actual
+
+
+    descripcion = deepseek_generatecontent(tipo, habitaciones)
+
+
+    return {"descripcion": descripcion}, 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
