@@ -11,6 +11,16 @@ def mostrar_menu_principal():
     print("3. Ver usuarios registrados")
     print("4. Salir")
 
+def mostrar_menu_comprador():
+    print("\n--- MENÚ DEL COMPRADOR ---")
+    print("1. Ver inmuebles disponibles (con filtros)")
+    print("2. Reservar inmueble")
+    print("3. Ver mis reservas")
+    print("4. Cancelar una reserva")
+    print("5. Añadir reseñas")
+    print("6. Ver reseñas")
+    print("7. Cerrar sesión")
+
 def añadir_resenya(id_inmueble, usuario):
     """ Función para añadir una reseña a un inmueble """
     resenya = input("Escribe tu reseña a continuación: ")
@@ -35,108 +45,112 @@ def ver_resenyas(id_inmueble):
     else:
         print("Este inmueble aún no tiene reseñas.")
 
-def mostrar_menu_comprador():
-    print("\n--- MENÚ DEL COMPRADOR ---")
-    print("1. Ver inmuebles disponibles (filtrar)")
-    print("2. Reservar o comprar inmueble")
-    print("3. Ver mis reservas")
-    print("4. Añadir mis propias reseñas")
-    print("5. Ver todas las reseñas")
-    print("6. Cerrar sesión")
+
+def aplicar_filtros():
+    print("\nPuedes filtrar por zona o número de habitaciones.")
+    zona = input("Filtrar por zona (o Enter para ignorar): ").lower()
+    habitaciones = input("Filtrar por número de habitaciones (o Enter para ignorar): ")
+
+    encontrados = False
+    for id_inmueble, datos in inmuebles.items():
+        cumple_zona = not zona or datos.get("zona", "").lower() == zona
+        cumple_hab = not habitaciones or str(datos.get("habitaciones", datos.get("habitacion", ""))) == habitaciones
+        if cumple_zona and cumple_hab:
+            encontrados = True
+            print(f"\nID: {id_inmueble}")
+            for clave, valor in datos.items():
+                print(f"  {clave.capitalize()}: {valor}")
+    if not encontrados:
+        print("No se encontraron inmuebles con esos filtros.")
+
 
 def menu_comprador(usuario, publicaciones, resenyas):
-    reservas = []  # Puedes vincular esto al usuario si implementas base de datos
+    if not hasattr(usuario, "reservas"):
+        usuario.reservas = []
 
     while True:
         mostrar_menu_comprador()
-        opcion = input("Selecciona una opción (1-6): ")
+        opcion = input("Selecciona una opción (1-7): ")
 
         if opcion == "1":
-            if not publicaciones:
-                print("No hay publicaciones disponibles.")
-                continue
-
-            try:
-                precio_max = float(input("Precio máximo (€): ") or 0)
-                zona = input("Zona: ") or None
-                superficie_min = float(input("Superficie mínima (m²): ") or 0)
-                tipo_alquiler = input("Tipo de alquiler: ") or None
-                capacidad_min = int(input("Capacidad mínima (personas): ") or 0)
-
-                precio_max = precio_max if precio_max > 0 else None
-                superficie_min = superficie_min if superficie_min > 0 else None
-                capacidad_min = capacidad_min if capacidad_min > 0 else None
-
-                resultados = filtrar_inmuebles(
-                    publicaciones,
-                    precio_max=precio_max,
-                    zona=zona,
-                    superficie_min=superficie_min,
-                    tipo_alquiler=tipo_alquiler,
-                    capacidad_min=capacidad_min
-                )
-
-                if resultados:
-                    print(f"\nSe encontraron {len(resultados)} publicación(es):\n")
-                    for pub in resultados:
-                        print(pub)  # puedes usar pub.__str__ si está implementado
-                else:
-                    print("No se encontraron resultados.")
-
-            except ValueError:
-                print("Entrada inválida. Intenta de nuevo.")
+            aplicar_filtros()
 
         elif opcion == "2":
-            if not publicaciones:
-                print("No hay publicaciones disponibles para reservar.")
-                continue
+            print("\n--- Inmuebles disponibles ---")
+            for id_inmueble, datos in inmuebles.items():
+                zona = datos.get("zona", "Desconocida")
+                habitaciones = datos.get("habitaciones", datos.get("habitacion", "N/A"))
+                print(f"ID: {id_inmueble} - Zona: {zona} - Habitaciones: {habitaciones}")
 
-            print("\nInmuebles disponibles:")
-            for pub in publicaciones:
-                print(f"ID: {pub['id']} - {pub['titulo']} - {pub['precio']}€")
+            id_reserva = input("Introduce el ID del inmueble a reservar: ")
 
-            id_reserva = input("Introduce el ID del inmueble que quieres reservar: ")
-
-            seleccionado = next((p for p in publicaciones if p["id"] == id_reserva), None)
-            if seleccionado:
-                usuario.reservas.append(seleccionado)
+            if id_reserva in inmuebles:
+                reserva = {**inmuebles[id_reserva], "id": id_reserva}
+                usuario.reservas.append(reserva)
                 print("Inmueble reservado con éxito.")
             else:
                 print("ID no válido.")
 
         elif opcion == "3":
             if usuario.reservas:
-                print("\n Tus reservas:")
-                for r in usuario.reservas:
-                    print(f"- {r['titulo']} ({r['zona']}) - {r['precio']}€")
+                print("\n--- Tus reservas ---:")
+                for i, r in enumerate(usuario.reservas, 1):
+                    zona = r.get("zona", "Desconocida")
+                    habitaciones = r.get("habitaciones", r.get("habitacion", "N/A"))
+                    print(f"{i}. ID: {r['id']} | Zona: {zona} | Habitaciones: {habitaciones}")
+
             else:
                 print("No tienes reservas todavía.")
 
 
         elif opcion == "4":
 
-            id_inmueble = input("Introduce el ID del inmueble para añadir la reseña: ")
-
-            if id_inmueble not in inmuebles:
-                print("Ese inmueble no existe.")
+            if not usuario.reservas:
+                print("No tienes reservas para cancelar.")
 
                 continue
 
-            añadir_resenya(id_inmueble, usuario)
+            print("\n--- Cancelar una reserva ---")
 
+            for r in usuario.reservas:
+                print(f"- ID: {r['id']} | Zona: {r.get('zona', '')}")
 
+            id_cancelar = input("Introduce el ID del inmueble a cancelar: ")
+
+            for reserva in usuario.reservas:
+
+                if reserva["id"] == id_cancelar:
+                    usuario.reservas.remove(reserva)
+
+                    print(f"Reserva cancelada: {id_cancelar}")
+
+                    break
+
+            else:
+
+                print("No tienes una reserva con ese ID.")
         elif opcion == "5":
+
+            id_inmueble = input("Introduce el ID del inmueble para añadir reseña: ")
+
+            if id_inmueble in inmuebles:
+                añadir_resenya(id_inmueble, usuario)
+
+            else:
+                print("Ese inmueble no existe.")
+
+
+        elif opcion == "6":
 
             id_inmueble = input("Introduce el ID del inmueble para ver las reseñas: ")
 
-            if id_inmueble not in inmuebles:
+            if id_inmueble in inmuebles:
+                ver_resenyas(id_inmueble)
+            else:
                 print("Ese inmueble no existe.")
 
-                continue
 
-            ver_resenyas(id_inmueble)
-
-        elif opcion == "6":
+        elif opcion == "7":
             print("Sesión cerrada.")
             break
 
@@ -163,6 +177,7 @@ def main():
         elif opcion == "2": # iniciar sesión
             nombre = input("Nombre de usuario: ")
             contrasenya = input("Contraseña: ")
+
             try:
                 usuario = iniciar_sesion(nombre, contrasenya)
                 print(f"Bienvenido, {usuario.nombre} ({usuario.__class__.__name__})")
