@@ -1,14 +1,51 @@
-from flask import (Flask, jsonify, request)
+from flask import Flask, jsonify, request, Response
+from modelos.usuario import Usuario
 
 app = Flask(__name__)
 # datos de prueba (base de datos)
 inmuebles = [
     {"id": 2, "nombre": "Apartamento en la ciudad", "precio": 150000},
 ]
+
 # Ruta principal
 @app.route("/")
 def home():
     return jsonify({"mensaje": "Bienvenido a la API de la inmobiliaria"}), 200
+
+
+usuarios_registrados : list[Usuario, ...] = []
+# inicio sesión
+@app.route('/usuario', methods=['POST'])
+def iniciar_sesion() -> tuple[Response, int]:
+    """
+    Verifica las credenciales de un usuario para iniciar sesión.
+
+    Parámetros (esperados en formato JSON):
+    - nombre: str
+        Nombre de usuario.
+    - contrasenya: str
+        Clave secreta del usuario.
+
+    Retorna:
+    - JSON con la representación del usuario y HTTP 200 si el log-in es
+    correcto.
+    - JSON con un mensaje de error y HTTP 401 si el log-in falla.
+    """
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+
+    # Verifica que se hayan proporcionado los campos requeridos.
+    if not nombre or not contrasenya:
+        return jsonify({"error": "Faltan credenciales."}), 400
+
+    for usuario in usuarios_registrados:
+        if (usuario.nombre == nombre and
+                usuario.verificar_contrasenya(contrasenya)):
+            return jsonify(usuario), 200
+
+    return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
+            401)
 
 # Obtener todos los inmuebles
 @app.route("/inmuebles", methods=["GET"])
