@@ -6,20 +6,38 @@ from typing import Any
 
 def cargar_data() -> dict[str, Any]:
     """
-    Método encargado de hacer el unpickling de los usuarios ya registrados.
+    Metodo encargado de hacer el unpickling (i.e. de-serialización) de toda
+    la información que deba permanecer en disco.
+
     Si el fichero no existe, crea uno nuevo y devuelve un diccionario vacío
 
     Retorna
     -------
     dict[str, Any]
-        diccionario con toda la información extraída del unpickling
+        - diccionario con toda la información guardada en disco durante
+        sesiones anteriores
     """
     try:
-        with open('data.txt', 'rb') as file:
+        with open('data.pkl', 'rb') as file:
             return pickle.load(file)
 
     except FileNotFoundError:
-        print("Warning: No se ha encontrado el fichero 'data.txt'. Creando fichero...")
-        with open('data.txt', 'x') as _:
-            return {}
+        print("Warning: No se ha encontrado el fichero 'data.txt'. "
+              "Creando fichero...")
+        with open('data.txt', 'wb') as file:
+            pickle.dump({}, file)
+        return {}
 
+def guardar_data(data : dict[str, Any]) -> None:
+    """
+    Metodo encargado de hacer el pickling (i.e. serialización) de toda
+    la información que deba permanecer en disco.
+
+    Parámetros
+    ----------
+    data: dict[str, Any]
+        - diccionario con toda la información que deba permanecer en disco
+    """
+
+    with open('data.pkl', 'wb') as file:
+        pickle.dump(data, file)
