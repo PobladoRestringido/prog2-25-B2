@@ -51,15 +51,6 @@ def iniciar_sesion() -> tuple[Response, int]:
     return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
             401)
 
-from flask import Flask, request, jsonify, Response
-
-app = Flask(__name__)
-
-# Suppose usuarios_registrados is a list for demonstration purposes.
-usuarios_registrados = []
-
-def is_valid_tipo(tipo: str) -> bool:
-    return tipo in {"comprador", "vendedor", "administrador"}
 
 @app.route('/register', methods=['POST'])
 def registrar_usuario() -> tuple[Response, int]:
