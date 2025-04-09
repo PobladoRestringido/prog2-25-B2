@@ -1,6 +1,10 @@
 import random
 from comentarios_inmu import comentarios_casas, comentarios_pisos
-from flask import Flask, request #Importamos la biblioteca
+from flask import Flask, jsonify, request, Response
+from modelos.usuario import Usuario
+from modelos.comprador import Comprador
+from modelos.administrador import Administrador
+from modelos.vendedor import Vendedor
 
 app = Flask(__name__) #Creamos la aplicación Flask
 
@@ -178,23 +182,103 @@ inmuebles = {
     }
 }
 
-
 @app.route('/')#Ruta inicial de la api
 def hola():
-    '''
+    """
        Función de inicio de la API. Esta función maneja la ruta raíz y
        devuelve un mensaje de bienvenida.
 
        Devuélve
        --------------
         -str: Un mensaje de texto dando la bienvenida a la API.
-    '''
+    """
     return 'Bienvenido a la API de inmuebles'
+
+usuarios_registrados : list[Usuario, ...] = [] # todo implementar pickling
+# inicio sesión
+@app.route('/login', methods=['POST'])
+def iniciar_sesion() -> tuple[Response, int]:
+    """
+    Verifica las credenciales de un usuario para iniciar sesión.
+
+    Parámetros (esperados en formato JSON):
+    - nombre: str
+        Nombre de usuario.
+    - contrasenya: str
+        Clave secreta del usuario.
+
+    Retorna:
+    - JSON con la representación del usuario y HTTP 200 si el log-in es
+    correcto.
+    - JSON con un mensaje de error y HTTP 401 si el log-in falla.
+    - JSON con un mensaje de error y HTTP 400 si faltan las credenciales.
+    """
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+
+    # Verifica que se hayan proporcionado los campos requeridos.
+    if not nombre or not contrasenya:
+        return jsonify({"error": "Faltan credenciales."}), 400
+
+    for usuario in usuarios_registrados:
+        if (usuario.nombre == nombre and
+                usuario.verificar_contrasenya(contrasenya)):
+            return jsonify(usuario), 200
+
+    return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
+            401)
+
+
+@app.route('/register', methods=['POST'])
+def registrar_usuario() -> tuple[Response, int]:
+    """
+    Registra un nuevo usuario si el nombre no está en uso.
+
+    Parámetros esperados en el JSON:
+        - nombre: nombre de usuario único
+        - contrasenya: clave secreta
+        - tipo: tipo de usuario (comprador, vendedor, administrador)
+
+    Retorna:
+        - JSON con la representación del usuario y HTTP 201 si el sign-up
+        fue correcto.
+        - JSON con un mensaje de error y HTTP 409 si el nombre de usuario
+        ya existe.
+        - JSON con un mensaje de error y HTTP 400 si se pide crear un tipo
+        de usuario inexistente.
+    """
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+    tipo = data.get('tipo')
+
+    # Validación básica de entrada.
+    if not nombre or not contrasenya:
+        return jsonify({'error': 'Faltan credenciales.'}), 400
+
+    # Verificar que el nombre de usuario no esté en uso.
+    for u in usuarios_registrados:
+        if u.nombre == nombre:
+            return (jsonify({'error': 'El nombre de usuario ya está en uso.'}),
+                    409)
+
+    if tipo == "comprador":
+        usuario = Comprador(nombre, contrasenya)
+    elif tipo == "vendedor":
+        usuario = Vendedor(nombre, contrasenya)
+    elif tipo == "administrador":
+        usuario = Administrador(nombre, contrasenya)
+    else:
+        return jsonify({'error': f"Tipo de usuario '{tipo}' no válido."}), 400
+
+    usuarios_registrados.append(usuario)
+    return jsonify({'usuario': usuario}), 201
 
 
 @app.route('/inmuebles', methods=['GET'])  # Ruta para ver todos los inmuebles
 def get_inmuebles():
-    '''
+    """
         Función que obtiene y devuelve la lista de todos los inmuebles registrados.
 
         Devuelve
@@ -203,7 +287,7 @@ def get_inmuebles():
                         los detalles de un inmueble (id, dueño, habitaciones, zona).
 
         -código de estado: 200 si la solicitud funciona sin ningún problema.
-    '''
+    """
     resultado = []
     for id, datos in inmuebles.items():
         inmueble = {'id': id}
@@ -216,7 +300,7 @@ def get_inmuebles():
 
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 def get_inmueble_id(id:int):
-    '''
+    """
     Función que nos muestra un inmueble por su ID
 
     Parámetros
@@ -230,7 +314,7 @@ def get_inmueble_id(id:int):
 
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
-    '''
+    """
 
     try:
         inmueble = inmuebles[id]
@@ -243,8 +327,8 @@ def get_inmueble_id(id:int):
 
 
 @app.route('/inmuebles/<id>', methods=['POST'])#Ruta para crear un nuevo inmueble en la base de datos
-def añadir_inmuebles(id:int):
-    '''
+def anyadir_inmuebles(id:int):
+    """
     Función que permite añadir un inmueble que no esté registrado
 
     Parámetros
@@ -258,7 +342,7 @@ def añadir_inmuebles(id:int):
 
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
-    '''
+    """
 
     if id not in inmuebles:
         datos = request.get_json()
@@ -278,7 +362,7 @@ def añadir_inmuebles(id:int):
 
 @app.route('/inmuebles/<id>', methods=['PUT'])#Ruta para actualizar los inmuebles
 def actualizar_inmueble(id:int):
-    '''
+    """
     Función para actualizar los inmuebles existentes
 
     Parámetros
@@ -292,7 +376,7 @@ def actualizar_inmueble(id:int):
 
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
-    '''
+    """
 
     if id in inmuebles:
 
@@ -314,7 +398,7 @@ def actualizar_inmueble(id:int):
 
 @app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
 def eliminar_inmueble(id:int):
-    '''
+    """
     Función para eliminar un inmueble existente
 
     Parámetros
@@ -329,7 +413,7 @@ def eliminar_inmueble(id:int):
 
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
-    '''
+    """
 
     if id in inmuebles:
         del inmuebles[id]
