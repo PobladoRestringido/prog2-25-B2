@@ -86,6 +86,96 @@ inmuebles = {
         'Precio de venta': 390.000,
         'Precio de alquiler/por mes': 470
     }
+'11': {
+        'dueño': 'Lucía Fernández',
+        'habitaciones': 2,
+        'zona': 'Centro',
+        'tiene_piscina': False,
+        'jardin': True,
+        'Precio de venta': 310_000,
+        'Precio de alquiler/por mes': 450
+    },
+    '12': {
+        'dueño': 'Andrés Morales',
+        'habitaciones': 4,
+        'zona': 'Sur',
+        'tiene_piscina': True,
+        'jardin': True,
+        'Precio de venta': 520_000,
+        'Precio de alquiler/por mes': 620
+    },
+    '13': {
+        'dueño': 'Nuria Blanco',
+        'habitaciones': 1,
+        'zona': 'Norte',
+        'tiene_piscina': False,
+        'jardin': False,
+        'Precio de venta': 190_000,
+        'Precio de alquiler/por mes': 320
+    },
+    '14': {
+        'dueño': 'David Ruiz',
+        'habitaciones': 3,
+        'zona': 'Centro',
+        'tiene_piscina': False,
+        'jardin': True,
+        'Precio de venta': 340_000,
+        'Precio de alquiler/por mes': 490
+    },
+    '15': {
+        'dueño': 'Elena Navarro',
+        'habitaciones': 5,
+        'zona': 'Área metropolitana',
+        'tiene_piscina': True,
+        'jardin': True,
+        'Precio de venta': 610_000,
+        'Precio de alquiler/por mes': 750
+    },
+    '16': {
+        'dueño': 'Mario Jiménez',
+        'habitaciones': 2,
+        'zona': 'Noroeste',
+        'tiene_piscina': False,
+        'jardin': True,
+        'Precio de venta': 280_000,
+        'Precio de alquiler/por mes': 410
+    },
+    '17': {
+        'dueño': 'Sara Castillo',
+        'habitaciones': 3,
+        'zona': 'Este',
+        'tiene_piscina': True,
+        'jardin': False,
+        'Precio de venta': 370_000,
+        'Precio de alquiler/por mes': 460
+    },
+    '18': {
+        'dueño': 'Víctor Romero',
+        'habitaciones': 4,
+        'zona': 'Oeste',
+        'tiene_piscina': True,
+        'jardin': True,
+        'Precio de venta': 490_000,
+        'Precio de alquiler/por mes': 630
+    },
+    '19': {
+        'dueño': 'Patricia Vega',
+        'habitaciones': 1,
+        'zona': 'Noreste',
+        'tiene_piscina': False,
+        'jardin': False,
+        'Precio de venta': 210_000,
+        'Precio de alquiler/por mes': 330
+    },
+    '20': {
+        'dueño': 'Jorge Delgado',
+        'habitaciones': 3,
+        'zona': 'Sur',
+        'tiene_piscina': False,
+        'jardin': True,
+        'Precio de venta': 355_000,
+        'Precio de alquiler/por mes': 490
+    }
 }
 
 
