@@ -13,7 +13,7 @@ def mostrar_menu_principal():
 
 def mostrar_menu_comprador():
     print("\n--- MENÚ DEL COMPRADOR ---")
-    print("1. Ver inmuebles disponibles (con filtros)")
+    print("1. Ver inmuebles disponibles")
     print("2. Reservar inmueble")
     print("3. Ver mis reservas")
     print("4. Cancelar una reserva")
@@ -99,7 +99,14 @@ def menu_comprador(usuario, publicaciones, resenyas):
         opcion = input("Selecciona una opción (1-7): ")
 
         if opcion == "1":
-            aplicar_filtros()
+            filtros = input('¿Desea aplicar filtros para mostrar los inmuebles? (si/no)')
+            if filtros == 'si':
+                aplicar_filtros()
+            else:
+                for id_inmueble, datos in inmuebles.items():
+                    print(f"\nID: {id_inmueble}")
+                    for clave, valor in datos.items():
+                        print(f"  {clave.capitalize()}: {valor}")
 
         elif opcion == "2":
             print("\n--- Inmuebles disponibles ---")
