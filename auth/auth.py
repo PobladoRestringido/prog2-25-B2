@@ -6,27 +6,26 @@ from modelos.comprador import Comprador
 from modelos.vendedor import Vendedor
 from modelos.administrador import Administrador
 
-usuarios_registrados = []
-
-def registrar_usuario(nombre: str, contrasenya: str, tipo: str = "comprador") -> Usuario:
+def registrar_usuario(nombre: str, contrasenya: str, usuarios_registrados: list[Usuario, ...], tipo: str = "comprador") -> Usuario:
     """
     Registra un nuevo usuario si el nombre no está en uso.
+
     Parámetros:
         - nombre: nombre de usuario único
         - contrasenya: clave secreta
         - tipo: tipo de usuario (comprador, vendedor, administrador)
+        - usuarios_registrados : list[Usuario, ...]
+            una lista con los usuarios ya registrados
+
     Retorna:
         - instancia de Usuario
-    """
-    usuario_existente = False
 
+    Levanta:
+        -
+    """
     for u in usuarios_registrados:
         if u.nombre == nombre:
-            usuario_existente = True
-            break
-
-    if usuario_existente:
-        raise ValueError("El nombre de usuario ya está en uso.")
+            raise ValueError("El nombre de usuario ya está en uso.")
 
     if tipo == "comprador":
         usuario = Comprador(nombre, contrasenya)
