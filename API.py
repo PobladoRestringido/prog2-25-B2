@@ -85,7 +85,7 @@ inmuebles = {
         'jardin': None,
         'Precio de venta': 390.000,
         'Precio de alquiler/por mes': 470
-    }
+    },
 '11': {
         'dueño': 'Lucía Fernández',
         'habitaciones': 2,

@@ -89,7 +89,7 @@ def aplicar_filtros():
         if cumple_zona and cumple_hab and cumple_precio:
             encontrados = True
             print(f"\nID: {id_inmueble}")
-               for clave, valor in datos.items():
+            for clave, valor in datos.items():
                 print(f"  {clave.capitalize()}: {valor}")
     if not encontrados:
         print("No se encontraron inmuebles con esos filtros.")
