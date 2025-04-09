@@ -21,6 +21,11 @@ def mostrar_menu_comprador():
     print("6. Ver reseñas")
     print("7. Cerrar sesión")
 
+def mostrar_menu_vendedor():
+    print("\n--- MENÚ DEL VENDEDOR ---")
+    print("1. Crear publicación")
+    print("2. Cerrar sesión")
+
 def añadir_resenya(id_inmueble, usuario):
     """ Función para añadir una reseña a un inmueble """
     resenya = input("Escribe tu reseña a continuación: ")
@@ -190,6 +195,47 @@ def menu_comprador(usuario, publicaciones, resenyas):
         else:
             print("Opción no válida.")
 
+def anadir_inmueble(usuario):
+    id_nuevo = input("Introduce un ID único para el nuevo inmueble: ")
+    while id_nuevo in inmuebles:
+        print("Ese ID ya existe. Por favor introduzca otro")
+        id_nuevo = input("Introduce un ID único para el nuevo inmueble: ")
+
+    try:
+        habitaciones = int(input("Número de habitaciones: "))
+        zona = input("Zona: ")
+        precio_venta = float(input("Precio de venta (€): "))
+        precio_alquiler = float(input("Precio de alquiler mensual (€): "))
+
+    except ValueError:
+        print("Entrada inválida. Intente de neuvo")
+
+    inmueble = {
+        'dueño': usuario.nombre,
+        'habitaciones': habitaciones,
+        'zona': zona,
+        'Precio de venta': precio_venta,
+        'Precio de alquiler/por mes': precio_alquiler
+    }
+
+    inmuebles[id_nuevo] = inmueble
+    print(f"Inmueble con ID {id_nuevo} añadido correctamente")
+
+def menu_vendedor(usuario):
+    while True:
+        mostrar_menu_vendedor()
+        opcion = input("Selecciona una opción (1-2): ")
+
+        if opcion == "1":
+            anadir_inmueble(usuario)
+
+        elif opcion == "2":
+            print("Sesión cerrada.")
+            break
+
+        else:
+            print("Opción no válida. Intenta de nuevo.")
+
 def main():
     publicaciones = []  # Aquí puedes cargar publicaciones de prueba
 
@@ -218,6 +264,8 @@ def main():
                 # Solo mostramos el menú si es comprador
                 if usuario.__class__.__name__.lower() == "comprador":
                     menu_comprador(usuario, publicaciones, resenyas)
+                elif usuario.__class__.__name__.lower() == "vendedor":
+                    menu_vendedor(usuario)
                 else:
                     print("Este tipo de usuario no tiene menú implementado todavía.")
 
