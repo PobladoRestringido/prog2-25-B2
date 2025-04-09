@@ -85,7 +85,7 @@ inmuebles = {
         'jardin': None,
         'Precio de venta': 390.000,
         'Precio de alquiler/por mes': 470
-    }
+    },
 '11': {
         'dueño': 'Lucía Fernández',
         'habitaciones': 2,
@@ -362,6 +362,5 @@ def mostrar_comentarios(id:int):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
