@@ -78,37 +78,100 @@ def ver_comentarios_inmueble():
         print("Inmueble no encontrado")
 
 
-def escribir_comentario():
-    inmueble_id = input("Introduce el ID del inmueble sobre el que deseas escribir: ")
-    comentario = input("Introduce tu comentario: ")
+def escribir_comentario() -> str:
+    """
+    Permite al usuario escribir un comentario sobre un inmueble y enviarlo a la API.
+
+    Esta función solicita al usuario el ID de un inmueble y un comentario. Si el comentario no está vacío,
+    se envía a la API asociada al inmueble correspondiente.
+
+    Si la operación es exitosa, devuelve un mensaje de confirmación. En caso de error, devuelve un mensaje de error.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    str
+        Mensaje indicando si el comentario fue agregado con éxito o si ocurrió un error.
+
+    Notes
+    -----
+    El comentario no puede estar vacío, y si es así, la función devuelve un mensaje de error.
+    """
+    inmueble_id: str = input("Introduce el ID del inmueble sobre el que deseas escribir: ")
+    comentario: str = input("Introduce tu comentario: ")
 
     if not comentario:
-        print("El comentario no puede estar vacío.")
-        return
+        return "El comentario no puede estar vacío."
 
     # Enviar el comentario a la API
     response = requests.post(f"{BASE_URL}inmueble/{inmueble_id}/escribir", json={"comentario": comentario})
 
     if response.status_code == 200:
-        print("Comentario agregado con éxito!")
+        return "Comentario agregado con éxito!"
     else:
-        print("Error al agregar el comentario:", response.json().get('error'))
+        return f"Error al agregar el comentario: {response.json().get('error')}"
 
-def anyadir_inmueble():
-    inmueble_id = input("Introduce el ID del nuevo inmueble: ")
-    dueño = input("Introduce el dueño del inmueble: ")
-    habitaciones = input("Introduce el número de habitaciones: ")
-    zona = input("Introduce la zona del inmueble: ")
-    data = {
+
+def anyadir_inmueble() -> str:
+    """
+    Función para añadir un nuevo inmueble solicitando los datos por consola.
+
+    Valida lo siguiente:
+    - El ID no debe ser repetido.
+    - Los campos de "habitaciones", "precio de venta" y "precio de alquiler" deben ser numéricos.
+    - El campo "dueño" no debe ser numérico.
+
+    Parametros
+    ------------------
+    ninguno
+
+    Devuelve:
+    -str
+        Un mensaje de confirmación si el inmueble fue añadido correctamente, o un mensaje de error si ocurrió un fallo.
+    """
+    inmueble_id: str = input("Introduce el ID del nuevo inmueble: ")
+    if inmueble_id in inmuebles:
+        return f"Error: El inmueble con ID {inmueble_id} ya existe."
+
+    dueño: str = input("Introduce el dueño del inmueble: ")
+    if dueño.isdigit():
+        return "Error: El campo 'dueño' no puede ser un número."
+
+    habitaciones: str = input("Introduce el número de habitaciones: ")
+    if not habitaciones.isdigit():
+        return "Error: El campo 'habitaciones' debe ser un número entero."
+
+    zona: str = input("Introduce la zona del inmueble: ")
+
+    precio_venta: str = input("Introduce el precio de venta: ")
+    try:
+        precio_venta_float = float(precio_venta)
+    except ValueError:
+        return "Error: El campo 'precio de venta' debe ser un número válido."
+
+    precio_alquiler: str = input("Introduce el precio de alquiler por mes: ")
+    try:
+        precio_alquiler_float = float(precio_alquiler)
+    except ValueError:
+        return "Error: El campo 'precio de alquiler' debe ser un número válido."
+
+    data: dict = {
         'dueño': dueño,
-        'habitaciones': habitaciones,
-        'zona': zona
+        'habitaciones': int(habitaciones),
+        'zona': zona,
+        'precio de venta': precio_venta_float,
+        'precio de alquiler/por mes': precio_alquiler_float
     }
+
     response = requests.post(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
     if response.status_code == 200:
-        print(f"Inmueble {inmueble_id} añadido correctamente.")
+        return f"Inmueble {inmueble_id} añadido correctamente."
     else:
-        print(response.json().get('error'))
+        return response.json().get('error', "Error desconocido.")
+
 
 
 def actualizar_inmueble() -> str:
@@ -127,7 +190,7 @@ def actualizar_inmueble() -> str:
     ninguno
 
     Devuelve:
-    str
+    -str
         Un mensaje de confirmación si el inmueble fue actualizado correctamente, o un mensaje de error si ocurrió un fallo.
     """
     inmueble_id: str = input("Introduce el ID del inmueble a actualizar: ")
@@ -190,7 +253,7 @@ def eliminar_inmueble() -> str:
     ninguno
 
     devuelve:
-    str
+    -str
         Un mensaje de confirmación si el inmueble fue eliminado correctamente, o un mensaje de error si ocurrió un fallo.
     """
     inmueble_id = input("Introduce el ID del inmueble a eliminar: ")
@@ -228,7 +291,7 @@ def main()-> None:
         ninguno
 
         Devuelve:
-        nada
+        -nada
         """
     while True:
         mostrar_menu()
