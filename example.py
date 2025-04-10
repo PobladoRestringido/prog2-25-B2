@@ -111,33 +111,125 @@ def anyadir_inmueble():
         print(response.json().get('error'))
 
 
-def actualizar_inmueble():
-    inmueble_id = input("Introduce el ID del inmueble a actualizar: ")
-    dueño = input("Introduce el nuevo dueño: ")
-    habitaciones = input("Introduce el nuevo número de habitaciones: ")
-    zona = input("Introduce la nueva zona: ")
-    data = {
+def actualizar_inmueble() -> str:
+    """
+    Solicita datos al usuario para actualizar un inmueble existente y envía la solicitud a la API.
+
+    Esta función recoge por consola los nuevos datos de un inmueble (dueño, habitaciones, zona,
+    precio de venta y precio de alquiler mensual) e intenta actualizar el inmueble en la API
+    utilizando una solicitud PUT.
+
+    Si la actualización es exitosa, devuelve un mensaje indicando que el inmueble ha sido actualizado.
+    Si ocurre un error, devuelve el mensaje de error recibido de la API.
+
+    Parametros
+    --------------
+    ninguno
+
+    Devuelve:
+    str
+        Un mensaje de confirmación si el inmueble fue actualizado correctamente, o un mensaje de error si ocurrió un fallo.
+    """
+    inmueble_id: str = input("Introduce el ID del inmueble a actualizar: ")
+
+    if inmueble_id not in inmuebles:
+        return f"Error: No se encuentra un inmueble con ID {inmueble_id}."
+
+    dueño: str = input("Introduce el nuevo dueño: ")
+
+    if dueño.isdigit():
+        return "Error: El campo 'dueño' no puede ser un número."
+
+    habitaciones: str = input("Introduce el nuevo número de habitaciones: ")
+
+    if not habitaciones.isdigit():
+        return "Error: El campo 'habitaciones' debe ser un número entero."
+
+    zona: str = input("Introduce la nueva zona: ")
+
+    precio_venta: str = input("Introduce el nuevo precio de venta: ")
+    try:
+        precio_venta_float = float(precio_venta)
+    except ValueError:
+        return "Error: El campo 'precio de venta' debe ser un número válido."
+
+    precio_alquiler: str = input("Introduce el nuevo precio de alquiler por mes: ")
+    try:
+        precio_alquiler_float = float(precio_alquiler)
+    except ValueError:
+        return "Error: El campo 'precio de alquiler' debe ser un número válido."
+
+    data: dict = {
         'dueño': dueño,
-        'habitaciones': habitaciones,
-        'zona': zona
+        'habitaciones': int(habitaciones),
+        'zona': zona,
+        'precio de venta': precio_venta_float,
+        'precio de alquiler/por mes': precio_alquiler_float
     }
+
     response = requests.put(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
     if response.status_code == 200:
-        print(f"Inmueble {inmueble_id} actualizado correctamente.")
+        return f"Inmueble {inmueble_id} actualizado correctamente."
     else:
-        print(response.json().get('error'))
+        return response.json().get('error', "Error desconocido.")
 
 
-def eliminar_inmueble():
+
+def eliminar_inmueble() -> str:
+    """
+    Elimina un inmueble dado su ID y devuelve un mensaje de confirmación o error.
+
+    Solicita al usuario que ingrese el ID del inmueble que desea eliminar. Luego, realiza una
+    solicitud HTTP DELETE a la API para eliminar el inmueble correspondiente.
+
+    Si la eliminación es exitosa, devuelve un mensaje indicando que el inmueble ha sido eliminado.
+    Si ocurre un error, devuelve el mensaje de error recibido de la API.
+
+    Parametros
+    --------------
+    ninguno
+
+    devuelve:
+    str
+        Un mensaje de confirmación si el inmueble fue eliminado correctamente, o un mensaje de error si ocurrió un fallo.
+    """
     inmueble_id = input("Introduce el ID del inmueble a eliminar: ")
     response = requests.delete(f"{BASE_URL}inmuebles/{inmueble_id}")
+
     if response.status_code == 200:
-        print(f"Inmueble {inmueble_id} eliminado correctamente.")
+        return f"Inmueble {inmueble_id} eliminado correctamente."
     else:
-        print(response.json().get('error'))
+        return response.json().get('error', "Error desconocido.")
 
 
-def main():
+def main()-> None:
+    """
+        Muestra un menú interactivo para que el usuario seleccione una opción de las disponibles.
+
+        En función de la opción seleccionada, ejecuta diferentes funciones que permiten interactuar
+        con los inmuebles, usuarios y comentarios en el sistema inmobiliario.
+
+        Las opciones incluyen:
+            1. Ver inmuebles disponibles.
+            2. Ver un inmueble específico por ID.
+            3. Registrar un nuevo usuario.
+            4. Iniciar sesión como usuario.
+            5. Ver los comentarios de un inmueble.
+            6. Escribir un nuevo comentario en un inmueble.
+            7. Añadir un nuevo inmueble.
+            8. Actualizar un inmueble existente.
+            9. Eliminar un inmueble.
+            0. Salir de la aplicación.
+
+        El bucle continuará ejecutándose hasta que el usuario seleccione la opción de salir (0).
+
+        Parametros
+        -----------
+        ninguno
+
+        Devuelve:
+        nada
+        """
     while True:
         mostrar_menu()
         opcion = input("Selecciona una opción: ")
