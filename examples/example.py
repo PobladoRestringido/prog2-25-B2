@@ -406,33 +406,29 @@ def main()-> None:
         -nada
         """
     while True:
-        mostrar_menu()
-        opcion = input("Selecciona una opción: ")
+        opcion = mostrar_menu()
 
-        if opcion == '1':
+        if opcion == 1:
             ver_inmuebles()
-        elif opcion == '2':
+        elif opcion == 2:
             ver_inmueble_por_id()
-        elif opcion == '3':
+        elif opcion == 3:
             registrar_usuario()
-        elif opcion == '4':
+        elif opcion == 4:
             iniciar_sesion()
-        elif opcion == '5':
+        elif opcion == 5:
             ver_comentarios_inmueble()
-        elif opcion == '6':
+        elif opcion == 6:
             escribir_comentario()  # Nueva opción
-        elif opcion == '7':
+        elif opcion == 7:
             anyadir_inmueble()
-        elif opcion == '8':
+        elif opcion == 8:
             actualizar_inmueble()
-        elif opcion == '9':
+        elif opcion == 9:
             eliminar_inmueble()
-        elif opcion == '0':
+        elif opcion == 0:
             print("Saliendo...")
             break
-        else:
-            print("Opción no válida. Por favor, intenta de nuevo.")
-
 
 if __name__ == "__main__":
     main()
