@@ -19,13 +19,18 @@ class Inmueble(ABC):
 
     Metodos
     -------
-    __init__(self, nombre : str, descripcion : str, habitaciones : list['Habitacion', ...], precio : float, zona : 'Zona') -> None
+    __init__(self, nombre : str, descripcion : str,
+    habitaciones : list['Habitacion', ...], precio : float, zona : 'Zona')
+    -> None
         El constructor de la clase
     """
 
-    contador_inmuebles = 0 # usado para asignar un identificador a cada inmueble
+    contador_inmuebles = 0 # usado para asignar un identificador a cada
+    # inmueble
 
-    def __init__(self, duenyo: 'Persona', habitaciones : list['Habitacion', ...], zona : 'ZonaGeografica') -> None:
+    def __init__(self, duenyo: 'Persona',
+                 habitaciones : list['Habitacion', ...],
+                 zona : 'ZonaGeografica') -> None:
         """
         Metodo constructor de la clase Inmueble
 
@@ -69,8 +74,11 @@ class Inmueble(ABC):
         Devuelve
         --------
         : str
-            un string de varias lineas exponiendo las caracteristicas del inmueble
+            un string de varias lineas exponiendo las caracteristicas del
+            inmueble
         """
 
-        return f'Inmueble: {self.__nombre}\nDescripcion: {self.__descripcion}\nNº habitaciones: {len(self.__habitaciones)}'
+        return (f'Inmueble: {self.__nombre}\nDescripcion: '
+                f'{self.__descripcion}\n'
+                f'Nº habitaciones: {len(self.__habitaciones)}')
 

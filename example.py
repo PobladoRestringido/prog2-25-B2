@@ -1,5 +1,4 @@
 import requests
-from API import inmuebles
 from serializacion.pickling import cargar_data, guardar_data
 
 BASE_URL = 'http://127.0.0.1:5000/'  # URL de la API Flask
@@ -93,25 +92,29 @@ def registrar_usuario() -> str:
     """
     Registra un nuevo usuario en la plataforma.
 
-    Solicita al usuario su nombre de usuario, contraseña y tipo de usuario (comprador, vendedor, administrador).
-    Luego, envía esta información a la API para crear una nueva cuenta de usuario. Si la operación es exitosa,
-    devuelve un mensaje de confirmación. En caso de error, devuelve el mensaje de error correspondiente.
+    Solicita al usuario su nombre de usuario, contraseña y tipo de usuario
+    (comprador, vendedor, administrador).
+    Luego, envía esta información a la API para crear una nueva cuenta de
+    usuario. Si la operación es exitosa,
+    devuelve un mensaje de confirmación. En caso de error, devuelve el mensaje
+    de error correspondiente.
 
-    Parametros
-    ----------
-    ninguno
 
-    devuelve:
+    Retorna
+    -------
     -str
-        Mensaje que indica si el registro del usuario fue exitoso o si ocurrió un error en el proceso de registro.
+        Mensaje que indica si el registro del usuario fue exitoso o si ocurrió
+        un error en el proceso de registro.
 
     Nota
     -----
-    El tipo de usuario debe ser uno de los siguientes: 'comprador', 'vendedor', 'administrador'.
+    El tipo de usuario debe ser uno de los siguientes: 'comprador',
+    'vendedor', 'administrador'.
     """
     nombre: str = input("Introduce tu nombre de usuario: ")
     contrasenya: str = input("Introduce tu contraseña: ")
-    tipo: str = input("Introduce el tipo de usuario (comprador, vendedor, administrador): ")
+    tipo: str = input("Introduce el tipo de usuario (comprador, vendedor, "
+                      "administrador): ")
 
     data: dict = {
         'nombre': nombre,
@@ -124,28 +127,28 @@ def registrar_usuario() -> str:
     if response.status_code == 201:
         return "Usuario registrado con éxito."
     else:
-        return f"Error al registrar el usuario: {response.json().get('error', 'Error desconocido.')}"
+        return (f"Error al registrar el usuario: "
+                f"{response.json().get('error', 'Error desconocido.')}")
 
 
 def iniciar_sesion() -> str:
     """
     Permite al usuario iniciar sesión con su nombre de usuario y contraseña.
 
-    Esta función solicita al usuario su nombre de usuario y contraseña, y luego envía una solicitud POST
-    a la API para autenticar al usuario. Si la autenticación es exitosa, devuelve un mensaje de confirmación.
+    Esta función solicita al usuario su nombre de usuario y contraseña, y
+    luego envía una solicitud POST a la API para autenticar al usuario. Si la
+    autenticación es exitosa, devuelve un mensaje de confirmación.
     En caso de error, devuelve el mensaje de error correspondiente.
-
-    Parametros
-    ----------
-    ninguno
 
     devuelve:
     -str
-        Mensaje que indica si el inicio de sesión fue exitoso o si ocurrió un error en el proceso de autenticación.
+        Mensaje que indica si el inicio de sesión fue exitoso o si ocurrió un
+        error en el proceso de autenticación.
 
     Nota
     -----
-    La función realiza una solicitud POST con el nombre de usuario y la contraseña al endpoint de autenticación de la API.
+    La función realiza una solicitud POST con el nombre de usuario y la
+    contraseña al endpoint de autenticación de la API.
     """
     nombre: str = input("Introduce tu nombre de usuario: ")
     contrasenya: str = input("Introduce tu contraseña: ")
@@ -160,7 +163,8 @@ def iniciar_sesion() -> str:
     if response.status_code == 200:
         return "Inicio de sesión exitoso."
     else:
-        return f"Error al iniciar sesión: {response.json().get('error', 'Error desconocido.')}"
+        return (f"Error al iniciar sesión: "
+                f"{response.json().get('error', 'Error desconocido.')}")
 
 
 def ver_comentarios_inmueble() -> str:
@@ -413,9 +417,9 @@ def main()-> None:
         elif opcion == 2:
             ver_inmueble_por_id()
         elif opcion == 3:
-            registrar_usuario()
+            print(registrar_usuario())
         elif opcion == 4:
-            iniciar_sesion()
+            print(iniciar_sesion())
         elif opcion == 5:
             ver_comentarios_inmueble()
         elif opcion == 6:

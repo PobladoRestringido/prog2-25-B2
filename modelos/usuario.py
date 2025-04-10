@@ -1,5 +1,7 @@
 import hashlib
 
+import hashlib
+
 class Usuario:
     def __init__(self, nombre: str, contrasenya: str):
         self.__nombre = nombre
@@ -14,3 +16,14 @@ class Usuario:
 
     def verificar_contrasenya(self, contrasenya: str) -> bool:
         return self.__contrasenya == self._encriptar_contrasenya(contrasenya)
+
+    def to_dict(self) -> dict:
+        """
+        Devuelve una representación en diccionario del usuario.
+        Nota: Por razones de seguridad, normalmente NO incluiríamos la
+        contraseña.
+        """
+        return {
+            "nombre": self.__nombre,
+            "contrasenya": self.__contrasenya
+        }
