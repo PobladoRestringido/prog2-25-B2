@@ -41,4 +41,3 @@ class Banyo(Habitacion):
         self.__tiene_banyera = tiene_banyera
         self.__tiene_vater = tiene_vater
         self.__tiene_lavabo = tiene_lavabo
-
