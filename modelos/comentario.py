@@ -4,7 +4,7 @@ class Comentario:
     """
     Clase que representa un comentario realizado por un comprador sobre una publicación.
 
-    Attributes
+    Atributos
     ----------
     contenido : str
         Texto del comentario realizado.
@@ -18,7 +18,7 @@ class Comentario:
         """
         Inicializa una nueva instancia de la clase Comentario.
 
-        Parameters
+        Parametros
         ----------
         contenido : str
             Contenido del comentario.

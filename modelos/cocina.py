@@ -4,7 +4,7 @@ class Cocina(Habitacion):
     """
     Clase que representa una cocina como una habitación dentro de un inmueble.
 
-    Attributes
+    Atributos
     ----------
     tiene_frigorifico : bool
         Indica si la cocina tiene frigorífico.
@@ -23,7 +23,7 @@ class Cocina(Habitacion):
         """
         Inicializa una nueva instancia de la clase Cocina.
 
-        Parameters
+        Parametros
         ----------
         superficie : float
             Superficie total de la cocina en metros cuadrados.
