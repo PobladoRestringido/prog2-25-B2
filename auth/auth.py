@@ -6,6 +6,8 @@ from modelos.comprador import Comprador
 from modelos.vendedor import Vendedor
 from modelos.administrador import Administrador
 
+
+
 def registrar_usuario(nombre: str, contrasenya: str, usuarios_registrados: list[Usuario, ...], tipo: str = "comprador") -> Usuario:
     """
     Registra un nuevo usuario si el nombre no está en uso.
