@@ -30,13 +30,34 @@ def ver_inmuebles():
         print("Error al obtener los inmuebles")
 
 
-def ver_inmueble_por_id():
-    inmueble_id = input("Introduce el ID del inmueble: ")
+def ver_inmueble_por_id() -> str:
+    """
+    Muestra los detalles de un inmueble a partir de su ID.
+
+    Solicita al usuario el ID de un inmueble y realiza una solicitud GET a la API para obtener la información 
+    del inmueble correspondiente. Si la operación es exitosa, devuelve los detalles del inmueble. Si el inmueble 
+    no es encontrado, devuelve un mensaje de error.
+
+    Parameteros
+    ----------
+    Ninguno
+
+    devuelve:
+    -str
+        Detalles del inmueble si la solicitud es exitosa, o un mensaje de error si no se encuentra el inmueble.
+    
+    Nota
+    -----
+    La función realiza una solicitud GET a la API para obtener los detalles de un inmueble usando su ID.
+    """
+    inmueble_id: str = input("Introduce el ID del inmueble: ")
     response = requests.get(f"{BASE_URL}inmuebles/{inmueble_id}")
+
     if response.status_code == 200:
-        print(response.json())
+        return response.json()  # Devuelve los detalles del inmueble.
     else:
-        print("Inmueble no encontrado")
+        return "Inmueble no encontrado"
+
 
 
 def registrar_usuario() -> str:
@@ -47,7 +68,7 @@ def registrar_usuario() -> str:
     Luego, envía esta información a la API para crear una nueva cuenta de usuario. Si la operación es exitosa,
     devuelve un mensaje de confirmación. En caso de error, devuelve el mensaje de error correspondiente.
 
-    Parameters
+    Parametros
     ----------
     ninguno
 
@@ -85,7 +106,7 @@ def iniciar_sesion() -> str:
     a la API para autenticar al usuario. Si la autenticación es exitosa, devuelve un mensaje de confirmación.
     En caso de error, devuelve el mensaje de error correspondiente.
 
-    Parameters
+    Parametros
     ----------
     ninguno
 
@@ -121,7 +142,7 @@ def ver_comentarios_inmueble() -> str:
     de dicho inmueble. Si la operación es exitosa, devuelve los comentarios. Si el inmueble no es encontrado,
     devuelve un mensaje de error.
 
-    Parameters
+    Parametros
     ----------
     ninguno
 
@@ -152,7 +173,7 @@ def escribir_comentario() -> str:
 
     Si la operación es exitosa, devuelve un mensaje de confirmación. En caso de error, devuelve un mensaje de error.
 
-    Parameters
+    Parametros
     ----------
     None
 
