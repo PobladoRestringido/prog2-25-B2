@@ -1,5 +1,5 @@
 import requests
-
+from API import inmuebles
 BASE_URL = 'http://127.0.0.1:5000/'  # URL de la API Flask
 
 
@@ -92,16 +92,61 @@ def escribir_comentario():
     else:
         print("Error al agregar el comentario:", response.json().get('error'))
 
-def anyadir_inmueble():
-    inmueble_id = input("Introduce el ID del nuevo inmueble: ")
-    dueño = input("Introduce el dueño del inmueble: ")
-    habitaciones = input("Introduce el número de habitaciones: ")
-    zona = input("Introduce la zona del inmueble: ")
-    data = {
+
+def anyadir_inmueble() -> None:
+    """
+    Función para añadir un nuevo inmueble solicitando los datos por consola.
+
+    Valida lo siguiente:
+    - El ID no debe ser repetido.
+    - Los campos de "habitaciones", "precio de venta" y "precio de alquiler" deben ser numéricos.
+    - El campo "dueño" no debe ser numérico.
+    """
+    inmueble_id: str = input("Introduce el ID del nuevo inmueble: ")
+
+    # Validar que el ID no se repita
+    if inmueble_id in inmuebles:
+        print(f"Error: El inmueble con ID {inmueble_id} ya existe.")
+        return
+
+    dueño: str = input("Introduce el dueño del inmueble: ")
+
+    # Validar que el dueño no sea un número
+    if dueño.isdigit():
+        print("Error: El campo 'dueño' no puede ser un número.")
+        return
+
+    habitaciones: str = input("Introduce el número de habitaciones: ")
+
+    # Validar que las habitaciones sean un número entero
+    if not habitaciones.isdigit():
+        print("Error: El campo 'habitaciones' debe ser un número entero.")
+        return
+
+    zona: str = input("Introduce la zona del inmueble: ")
+
+    # Validar que el precio de venta sea un número flotante o entero
+    precio_venta: str = input("Introduce el precio de venta: ")
+    if not precio_venta.replace('.', '', 1).isdigit() or precio_venta.count('.') > 1:
+        print("Error: El campo 'precio de venta' debe ser un número válido.")
+        return
+
+    # Validar que el precio de alquiler sea un número flotante o entero
+    precio_alquiler: str = input("Introduce el precio de alquiler por mes: ")
+    if not precio_alquiler.replace('.', '', 1).isdigit() or precio_alquiler.count('.') > 1:
+        print("Error: El campo 'precio de alquiler' debe ser un número válido.")
+        return
+
+    # Crear el diccionario con los datos del inmueble
+    data: dict = {
         'dueño': dueño,
-        'habitaciones': habitaciones,
-        'zona': zona
+        'habitaciones': int(habitaciones),
+        'zona': zona,
+        'precio de venta': float(precio_venta),
+        'precio de alquiler/por mes': float(precio_alquiler)
     }
+
+    # Enviar la solicitud POST para añadir el inmueble
     response = requests.post(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
     if response.status_code == 200:
         print(f"Inmueble {inmueble_id} añadido correctamente.")
@@ -109,16 +154,63 @@ def anyadir_inmueble():
         print(response.json().get('error'))
 
 
-def actualizar_inmueble():
-    inmueble_id = input("Introduce el ID del inmueble a actualizar: ")
-    dueño = input("Introduce el nuevo dueño: ")
-    habitaciones = input("Introduce el nuevo número de habitaciones: ")
-    zona = input("Introduce la nueva zona: ")
-    data = {
+def actualizar_inmueble() -> None:
+    """
+    Solicita datos al usuario para actualizar un inmueble existente y envía la solicitud a la API.
+
+    Esta función recoge por consola los nuevos datos de un inmueble (dueño, habitaciones, zona,
+    precio de venta y precio de alquiler mensual) e intenta actualizar el inmueble en la API
+    utilizando una solicitud PUT.
+
+    Devuelve:
+    -str
+        mensaje de confirmación de actualizacion o mensaje de error 
+    """
+    inmueble_id: str = input("Introduce el ID del inmueble a actualizar: ")
+
+
+    if inmueble_id not in inmuebles:
+        print(f"Error: No se encuentra un inmueble con ID {inmueble_id}.")
+        return
+
+    dueño: str = input("Introduce el nuevo dueño: ")
+
+
+    if dueño.isdigit():
+        print("Error: El campo 'dueño' no puede ser un número.")
+        return
+
+    habitaciones: str = input("Introduce el nuevo número de habitaciones: ")
+
+
+    if not habitaciones.isdigit():
+        print("Error: El campo 'habitaciones' debe ser un número entero.")
+        return
+
+    zona: str = input("Introduce la nueva zona: ")
+
+
+    precio_venta: str = input("Introduce el nuevo precio de venta: ")
+    if not precio_venta.replace('.', '', 1).isdigit() or precio_venta.count('.') > 1:  # Verifica que el precio de venta sea un número válido y que tenga, como máximo, un solo punto decimal.
+        print("Error: El campo 'precio de venta' debe ser un número válido.")
+        return
+
+
+    precio_alquiler: str = input("Introduce el nuevo precio de alquiler por mes: ")
+    if not precio_alquiler.replace('.', '', 1).isdigit() or precio_alquiler.count('.') > 1:# Verifica que el precio de venta sea un número válido y que tenga, como máximo, un solo punto decimal.
+        print("Error: El campo 'precio de alquiler' debe ser un número válido.")
+        return
+
+
+    data: dict = {
         'dueño': dueño,
-        'habitaciones': habitaciones,
-        'zona': zona
+        'habitaciones': int(habitaciones),
+        'zona': zona,
+        'precio de venta': float(precio_venta),
+        'precio de alquiler/por mes': float(precio_alquiler)
     }
+
+    # Enviar la solicitud PUT para actualizar el inmueble
     response = requests.put(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
     if response.status_code == 200:
         print(f"Inmueble {inmueble_id} actualizado correctamente.")

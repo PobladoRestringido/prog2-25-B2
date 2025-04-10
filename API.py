@@ -1,3 +1,4 @@
+
 import random
 from comentarios_inmu import comentarios_casas, comentarios_pisos,comentarios_usuario
 from flask import Flask, jsonify, request, Response
@@ -8,8 +9,6 @@ from modelos.vendedor import Vendedor
 
 app = Flask(__name__) #Creamos la aplicación Flask
 
-
-# abrimos un archivo que contenga nuestra data serializada:
 
 #INMUEBLES DE EJEMPLO,ESTO SE QUITARÁ (dejando un diccionario vacío) CUANDO CREEMOS INMUEBLES Y SE IMPORTARÁ
 inmuebles = {
@@ -185,21 +184,23 @@ inmuebles = {
     }
 }
 
-@app.route('/')#Ruta inicial de la api
-def hola():
+@app.route('/')  # Ruta inicial de la API
+def hola() -> str:
     """
-       Función de inicio de la API. Esta función maneja la ruta raíz y
-       devuelve un mensaje de bienvenida.
+    Maneja la ruta raíz de la API.
 
-       Devuélve
-       --------------
-        -str: Un mensaje de texto dando la bienvenida a la API.
+    Esta función se ejecuta cuando se accede a la ruta principal ('/') y
+    devuelve un mensaje de bienvenida.
+
+    Devuelve:
+    -str
+        Mensaje de bienvenida a la API.
     """
     return 'Bienvenido a la API de inmuebles'
 
 usuarios_registrados : list[Usuario, ...] = [] # todo implementar pickling
 # inicio sesión
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST'])# inicio sesión
 def iniciar_sesion() -> tuple[Response, int]:
     """
     Verifica las credenciales de un usuario para iniciar sesión.
@@ -280,16 +281,19 @@ def registrar_usuario() -> tuple[Response, int]:
 
 
 @app.route('/inmuebles', methods=['GET'])  # Ruta para ver todos los inmuebles
-def get_inmuebles():
+def get_inmuebles() -> tuple[list[dict], int]:
     """
-        Función que obtiene y devuelve la lista de todos los inmuebles registrados.
+    Obtiene y devuelve la lista de todos los inmuebles registrados.
 
-        Devuelve
-        --------------
-        -lista[diccionario]: Una lista de diccionarios donde cada diccionario contiene
-                        los detalles de un inmueble (id, dueño, habitaciones, zona).
+    Itera sobre los inmuebles almacenados y construye una lista de diccionarios
+    con los detalles de cada uno, incluyendo su identificador.
 
-        -código de estado: 200 si la solicitud funciona sin ningún problema.
+    Devuelve:
+    tupla[lista[dic], int]
+        Una tupla que contiene:
+        - Una lista de diccionarios, donde cada diccionario representa un inmueble
+          con sus atributos (por ejemplo: id, dueño, habitaciones, zona).
+        - El código de estado HTTP 200 si la solicitud se procesa correctamente.
     """
     resultado = []
     for id, datos in inmuebles.items():
@@ -298,27 +302,29 @@ def get_inmuebles():
             inmueble[clave] = valor
         resultado.append(inmueble)
 
-    return jsonify(resultado), 200
+    return resultado, 200
 
 
-@app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
-def get_inmueble_id(id:int):
+
+@app.route('/inmuebles/<id>', methods=['GET'])  # Ruta para ver un inmueble utilizando su id
+def get_inmueble_id(id: int) -> tuple[dict, int]:
     """
-    Función que nos muestra un inmueble por su ID
+    Obtiene los detalles de un inmueble específico por su ID.
 
-    Parámetros
-    ------------
-    -id: int
-        ID del inmueble que queramos consultar
+    Parameters
+    ----------
+    id : int
+        Identificador del inmueble a consultar.
 
-    Devuélve
-    ------------
-    -Diccionario con los detalles del inmueble si existe, si no existe nos salta un error.
-
-    -código de estado: 200 si la solicitud funciona sin ningún problema
-                       404 si la solicitud tiene algún problema
+    Devuelve:
+    tupla[dic, int]
+        Una tupla que contiene:
+        - Un diccionario con los detalles del inmueble si se encuentra,
+          o un mensaje de error si no existe.
+        - El código de estado HTTP:
+            200 si la solicitud se procesa correctamente,
+            404 si el inmueble no se encuentra.
     """
-
     try:
         inmueble = inmuebles[id]
         inmueble_id = {"id": id}
@@ -329,71 +335,106 @@ def get_inmueble_id(id:int):
         return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
 
 
-@app.route('/inmuebles/<id>', methods=['POST'])#Ruta para crear un nuevo inmueble en la base de datos
-def anyadir_inmuebles(id:int):
+@app.route('/inmuebles/<id>', methods=['POST'])  # Ruta para crear un nuevo inmueble en la base de datos
+def anyadir_inmuebles(id: int) -> tuple[dict, int]:
     """
-    Función que permite añadir un inmueble que no esté registrado
+    Añade un nuevo inmueble si no está registrado.
 
-    Parámetros
-    ------------
-    -id: int
-        ID del inmueble que tendrá el inmueble que añadamos
+    Esta función permite registrar un inmueble con un ID específico,
+    siempre que no exista ya en la base de datos. Valida que se
+    proporcionen todos los campos necesarios: dueño, habitaciones, zona,
+    precio de venta y precio de alquiler por mes.
 
-    Devuelve
-    -----------
-    -Diccionario con los detalles que introduzcamos del inmueble si existe, si no nos sale un error
+    Parameters
+    ----------
+    id : int
+        Identificador que se asignará al nuevo inmueble.
 
-    -código de estado: 200 si la solicitud funciona sin ningún problema
-                       404 si la solicitud tiene algún problema
+    Devuelve:
+    tupla[dict, int]
+        Una tupla que contiene:
+        - Un diccionario con un mensaje de éxito o de error.
+        - El código de estado HTTP:
+            - 200 si el inmueble se añade correctamente.
+            - 400 si faltan campos obligatorios.
+            - 409 si el inmueble ya existe.
     """
-
     if id not in inmuebles:
         datos = request.get_json()
 
-        necesario = {'dueño', 'habitaciones', 'zona'}
+        necesario = {
+            'dueño',
+            'habitaciones',
+            'zona',
+            'precio de venta',
+            'precio de alquiler/por mes'
+        }
+
         if not datos or not necesario.issubset(datos.keys()):
-            return jsonify({'error': 'Faltan campos obligatorios (dueño, habitaciones, zona)'}), 400
+            return jsonify({
+                'error': 'Faltan campos obligatorios (dueño, habitaciones, zona, precio de venta, precio de alquiler/por mes)'
+            }), 400
 
         inmuebles[id] = {
             'dueño': datos['dueño'],
             'habitaciones': datos['habitaciones'],
-            'zona': datos['zona']
+            'zona': datos['zona'],
+            'precio de venta': datos['precio de venta'],
+            'precio de alquiler/por mes': datos['precio de alquiler/por mes']
         }
         return jsonify({'mensaje': f'Inmueble {id} añadido correctamente'}), 200
     else:
         return jsonify({'error': f'Inmueble {id} ya existe'}), 409
 
-@app.route('/inmuebles/<id>', methods=['PUT'])#Ruta para actualizar los inmuebles
-def actualizar_inmueble(id:int):
+
+@app.route('/inmuebles/<id>', methods=['PUT'])  # Ruta para actualizar los inmuebles
+def actualizar_inmueble(id: int) -> tuple[dict, int]:
     """
-    Función para actualizar los inmuebles existentes
+    Actualiza los datos de un inmueble existente.
 
-    Parámetros
-    --------------
-    -id: int
-        ID del inmueble que queremos actualizar
+    Esta función permite modificar todos los campos de un inmueble ya registrado.
+    Se requiere proporcionar los siguientes datos: dueño, habitaciones, zona,
+    precio de venta y precio de alquiler por mes.
 
-    Devuélve
-    -----------
-    -Diccionario con los elementos actualizados del inmueble que existe, si no nos salta un error
+    Parameters
+    ----------
+    id : int
+        Identificador del inmueble que se desea actualizar.
 
-    -código de estado: 200 si la solicitud funciona sin ningún problema
-                       404 si la solicitud tiene algún problema
+    Devuelve:
+    tuple[dict, int]
+        Una tupla que contiene:
+        - Un diccionario con un mensaje de éxito si se actualiza correctamente,
+          o un mensaje de error si el inmueble no existe o faltan campos.
+        - El código de estado HTTP:
+            - 200 si la actualización se realiza correctamente.
+            - 400 si faltan campos obligatorios.
+            - 404 si el inmueble no se encuentra registrado.
     """
-
     if id in inmuebles:
-
         datos = request.get_json()
 
-        requerido = {"dueño", "habitaciones", "zona"}
+        requerido = {
+            "dueño",
+            "habitaciones",
+            "zona",
+            "precio de venta",
+            "precio de alquiler/por mes"
+        }
+
         if not datos or not requerido.issubset(datos.keys()):
-            return jsonify({"error": "Faltan campos obligatorios (dueño, habitaciones, zona)"}), 400
+            return jsonify({
+                "error": "Faltan campos obligatorios (dueño, habitaciones, zona, precio de venta, precio de alquiler/por mes)"
+            }), 400
 
         inmuebles[id] = {
             "dueño": datos["dueño"],
             "habitaciones": datos["habitaciones"],
-            "zona": datos["zona"]
+            "zona": datos["zona"],
+            "precio de venta": datos["precio de venta"],
+            "precio de alquiler/por mes": datos["precio de alquiler/por mes"]
         }
+
         return jsonify({"mensaje": f"Inmueble {id} actualizado correctamente"}), 200
     else:
         return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
