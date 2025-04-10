@@ -48,7 +48,7 @@ def ver_inmuebles() -> None:
 
     Esta función ejemplifica cómo obtener información sobre todos los
     inmuebles guardados en la 'base de datos' de la API. Utiliza el endpoint
-    '/inmuebles' y el metodo http
+    '/inmuebles' y el metodo http GET
     """
     response = requests.get(f"{BASE_URL}inmuebles")
     if response.status_code == 200:

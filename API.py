@@ -5,6 +5,7 @@ from modelos.usuario import Usuario
 from modelos.comprador import Comprador
 from modelos.administrador import Administrador
 from modelos.vendedor import Vendedor
+from serializacion.pickling import cargar_data
 
 app = Flask(__name__) #Creamos la aplicación Flask
 
@@ -276,27 +277,18 @@ def registrar_usuario() -> tuple[Response, int]:
     return jsonify({'usuario': usuario}), 201
 
 
-@app.route('/inmuebles', methods=['GET'])  # Ruta para ver todos los inmuebles
-def get_inmuebles():
+@app.route('/inmuebles', methods=['GET'])
+def get_inmuebles() -> tuple[Response, int]:
     """
-        Función que obtiene y devuelve la lista de todos los inmuebles registrados.
+    Función que obtiene y devuelve la lista de todos los inmuebles registrados.
 
-        Devuelve
-        --------------
-        -lista[diccionario]: Una lista de diccionarios donde cada diccionario contiene
-                        los detalles de un inmueble (id, dueño, habitaciones, zona).
-
-        -código de estado: 200 si la solicitud funciona sin ningún problema.
+    Returns
+    -------
+    tuple(Response, int)
+        JSON con la lista de inmuebles y HTTP 200 si la operación fue correcta.
     """
-    resultado = []
-    for id, datos in inmuebles.items():
-        inmueble = {'id': id}
-        for clave, valor in datos.items():
-            inmueble[clave] = valor
-        resultado.append(inmueble)
-
-    return jsonify(resultado), 200
-
+    data = cargar_data()  # de-serializamos los inmuebles
+    return jsonify(data['inmuebles']), 200
 
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 def get_inmueble_id(id:int):
