@@ -39,43 +39,108 @@ def ver_inmueble_por_id():
         print("Inmueble no encontrado")
 
 
-def registrar_usuario():
-    nombre = input("Introduce tu nombre de usuario: ")
-    contrasenya = input("Introduce tu contraseña: ")
-    tipo = input("Introduce el tipo de usuario (comprador, vendedor, administrador): ")
-    data = {
+def registrar_usuario() -> str:
+    """
+    Registra un nuevo usuario en la plataforma.
+
+    Solicita al usuario su nombre de usuario, contraseña y tipo de usuario (comprador, vendedor, administrador).
+    Luego, envía esta información a la API para crear una nueva cuenta de usuario. Si la operación es exitosa,
+    devuelve un mensaje de confirmación. En caso de error, devuelve el mensaje de error correspondiente.
+
+    Parameters
+    ----------
+    ninguno
+
+    devuelve:
+    -str
+        Mensaje que indica si el registro del usuario fue exitoso o si ocurrió un error en el proceso de registro.
+
+    Nota
+    -----
+    El tipo de usuario debe ser uno de los siguientes: 'comprador', 'vendedor', 'administrador'.
+    """
+    nombre: str = input("Introduce tu nombre de usuario: ")
+    contrasenya: str = input("Introduce tu contraseña: ")
+    tipo: str = input("Introduce el tipo de usuario (comprador, vendedor, administrador): ")
+
+    data: dict = {
         'nombre': nombre,
         'contrasenya': contrasenya,
         'tipo': tipo
     }
+
     response = requests.post(f"{BASE_URL}register", json=data)
+
     if response.status_code == 201:
-        print("Usuario registrado con éxito.")
+        return "Usuario registrado con éxito."
     else:
-        print(response.json().get('error'))
+        return f"Error al registrar el usuario: {response.json().get('error', 'Error desconocido.')}"
 
 
-def iniciar_sesion():
-    nombre = input("Introduce tu nombre de usuario: ")
-    contrasenya = input("Introduce tu contraseña: ")
-    data = {
+def iniciar_sesion() -> str:
+    """
+    Permite al usuario iniciar sesión con su nombre de usuario y contraseña.
+
+    Esta función solicita al usuario su nombre de usuario y contraseña, y luego envía una solicitud POST
+    a la API para autenticar al usuario. Si la autenticación es exitosa, devuelve un mensaje de confirmación.
+    En caso de error, devuelve el mensaje de error correspondiente.
+
+    Parameters
+    ----------
+    ninguno
+
+    devuelve:
+    -str
+        Mensaje que indica si el inicio de sesión fue exitoso o si ocurrió un error en el proceso de autenticación.
+
+    Nota
+    -----
+    La función realiza una solicitud POST con el nombre de usuario y la contraseña al endpoint de autenticación de la API.
+    """
+    nombre: str = input("Introduce tu nombre de usuario: ")
+    contrasenya: str = input("Introduce tu contraseña: ")
+
+    data: dict = {
         'nombre': nombre,
         'contrasenya': contrasenya
     }
+
     response = requests.post(f"{BASE_URL}login", json=data)
+
     if response.status_code == 200:
-        print("Inicio de sesión exitoso.")
+        return "Inicio de sesión exitoso."
     else:
-        print(response.json().get('error'))
+        return f"Error al iniciar sesión: {response.json().get('error', 'Error desconocido.')}"
 
 
-def ver_comentarios_inmueble():
-    inmueble_id = input("Introduce el ID del inmueble para ver los comentarios: ")
+def ver_comentarios_inmueble() -> str:
+    """
+    Muestra los comentarios asociados a un inmueble.
+
+    Solicita al usuario el ID de un inmueble y realiza una solicitud GET a la API para obtener los comentarios
+    de dicho inmueble. Si la operación es exitosa, devuelve los comentarios. Si el inmueble no es encontrado,
+    devuelve un mensaje de error.
+
+    Parameters
+    ----------
+    ninguno
+
+    devuelve:
+    str
+        Los comentarios del inmueble si la solicitud es exitosa, o un mensaje de error si no se encuentra el inmueble.
+
+    Nota
+    -----
+    La función realiza una solicitud GET a la API para obtener los comentarios del inmueble especificado por el usuario.
+    """
+    inmueble_id: str = input("Introduce el ID del inmueble para ver los comentarios: ")
     response = requests.get(f"{BASE_URL}inmueble/{inmueble_id}/comentarios")
+
     if response.status_code == 200:
-        print(response.json())
+        return response.json()  # Devuelve los comentarios como un diccionario o lista de comentarios.
     else:
-        print("Inmueble no encontrado")
+        return "Inmueble no encontrado"
+
 
 
 def escribir_comentario() -> str:
@@ -96,7 +161,7 @@ def escribir_comentario() -> str:
     str
         Mensaje indicando si el comentario fue agregado con éxito o si ocurrió un error.
 
-    Notes
+    Nota
     -----
     El comentario no puede estar vacío, y si es así, la función devuelve un mensaje de error.
     """
