@@ -1,24 +1,55 @@
 import requests
+from serializacion.pickling import cargar_data, guardar_data
 
 BASE_URL = 'http://127.0.0.1:5000/'  # URL de la API Flask
 
+def mostrar_menu() -> int:
+    """
+    Función para mostrar las opciones al usuario y validar su elección
 
-def mostrar_menu():
-    print("\nMenu de Opciones:")
-    print("1. Ver todos los inmuebles")
-    print("2. Ver inmueble por ID")
-    print("3. Registrar usuario")
-    print("4. Iniciar sesión")
-    print("5. Ver comentarios de un inmueble")
-    print("6. Escribir comentario sobre un inmueble")
-    print("7. Añadir un nuevo inmueble")
-    print("8. Actualizar un inmueble")
-    print("9. Eliminar un inmueble")
-    print("0. Salir")
+    El propósito de esta función es mostrar al usuario las opciones que tiene
+    en este script de ejemplo, y pedirle que elija una
 
+    Retorna
+    -------
+    eleccion: int
+        - la eleccion del usuario (1-9)
+    """
+
+    while True:
+        print('\n-'*10, 'Menu de Opciones', '-'*10)
+        print("1. Ver todos los inmuebles")
+        print("2. Ver inmueble por ID")
+        print("3. Registrar usuario")
+        print("4. Iniciar sesión")
+        print("5. Ver comentarios de un inmueble")
+        print("6. Escribir comentario sobre un inmueble")
+        print("7. Añadir un nuevo inmueble")
+        print("8. Actualizar un inmueble")
+        print("9. Eliminar un inmueble")
+        print("0. Salir")
+
+        try:
+            eleccion = int(input('Opcion: '))
+
+            if eleccion in range(10):
+                break
+            else:
+                print('Error: opción inválida')
+        except ValueError:
+            print('Error: la elección debe ser un número')
+
+    return eleccion
 
 # FUNCIONES PARA LLAMARLAS EN EL BUCLE
-def ver_inmuebles():
+def ver_inmuebles() -> None:
+    """
+    Función para mostrar la información de todos los inmuebles guardados
+
+    Esta función ejemplifica cómo obtener información sobre todos los
+    inmuebles guardados en la 'base de datos' de la API. Utiliza el endpoint
+    '/inmuebles' y el metodo http
+    """
     response = requests.get(f"{BASE_URL}inmuebles")
     if response.status_code == 200:
         inmuebles = response.json()
@@ -136,9 +167,10 @@ def eliminar_inmueble():
 
 
 def main():
+    # hacemos unpickling de nuestros datos:
+    data = cargar_data()
     while True:
-        mostrar_menu()
-        opcion = input("Selecciona una opción: ")
+        opcion = mostrar_menu()
 
         if opcion == '1':
             ver_inmuebles()
@@ -161,10 +193,12 @@ def main():
         elif opcion == '0':
             print("Saliendo...")
             break
-        else:
-            print("Opción no válida. Por favor, intenta de nuevo.")
+
+    # volvemos a serializar nuestra data
+    guardar_data(data)
 
 
+# inicio ejecución
 if __name__ == "__main__":
     main()
 

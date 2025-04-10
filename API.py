@@ -8,9 +8,6 @@ from modelos.vendedor import Vendedor
 
 app = Flask(__name__) #Creamos la aplicación Flask
 
-
-# abrimos un archivo que contenga nuestra data serializada:
-
 #INMUEBLES DE EJEMPLO,ESTO SE QUITARÁ (dejando un diccionario vacío) CUANDO CREEMOS INMUEBLES Y SE IMPORTARÁ
 inmuebles = {
     '1': {
