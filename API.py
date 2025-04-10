@@ -298,7 +298,7 @@ def get_inmuebles():
             inmueble[clave] = valor
         resultado.append(inmueble)
 
-    return resultado, 200
+    return jsonify(resultado), 200
 
 
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
@@ -324,9 +324,9 @@ def get_inmueble_id(id:int):
         inmueble_id = {"id": id}
         for clave, valor in inmueble.items():
             inmueble_id[clave] = valor
-        return inmueble_id, 200
+        return jsonify(inmueble_id), 200
     except KeyError:
-        return f'Inmueble {id} no encontrado', 404
+        return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
 
 
 @app.route('/inmuebles/<id>', methods=['POST'])#Ruta para crear un nuevo inmueble en la base de datos
@@ -352,16 +352,16 @@ def anyadir_inmuebles(id:int):
 
         necesario = {'dueño', 'habitaciones', 'zona'}
         if not datos or not necesario.issubset(datos.keys()):
-            return {'error': 'Faltan campos obligatorios (dueño, habitaciones, zona)'}, 400
+            return jsonify({'error': 'Faltan campos obligatorios (dueño, habitaciones, zona)'}), 400
 
         inmuebles[id] = {
             'dueño': datos['dueño'],
             'habitaciones': datos['habitaciones'],
             'zona': datos['zona']
         }
-        return {'mensaje': f'Inmueble {id} añadido correctamente'}, 200
+        return jsonify({'mensaje': f'Inmueble {id} añadido correctamente'}), 200
     else:
-        return {'error': f'Inmueble {id} ya existe'}, 409
+        return jsonify({'error': f'Inmueble {id} ya existe'}), 409
 
 @app.route('/inmuebles/<id>', methods=['PUT'])#Ruta para actualizar los inmuebles
 def actualizar_inmueble(id:int):
@@ -387,16 +387,16 @@ def actualizar_inmueble(id:int):
 
         requerido = {"dueño", "habitaciones", "zona"}
         if not datos or not requerido.issubset(datos.keys()):
-            return {"error": "Faltan campos obligatorios (dueño, habitaciones, zona)"}, 400
+            return jsonify({"error": "Faltan campos obligatorios (dueño, habitaciones, zona)"}), 400
 
         inmuebles[id] = {
             "dueño": datos["dueño"],
             "habitaciones": datos["habitaciones"],
             "zona": datos["zona"]
         }
-        return {"mensaje": f"Inmueble {id} actualizado correctamente"}, 200
+        return jsonify({"mensaje": f"Inmueble {id} actualizado correctamente"}), 200
     else:
-        return {"error": f"Inmueble {id} no encontrado"}, 404
+        return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
 
 
 @app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
@@ -420,16 +420,39 @@ def eliminar_inmueble(id:int):
 
     if id in inmuebles:
         del inmuebles[id]
-        return f'Inmueble {id} eliminado', 200
+        return jsonify({"mensaje": f'Inmueble {id} eliminado'}), 200
     else:
-        return f'Inmueble {id} No encontrado', 404
+        return jsonify({"error": f'Inmueble {id} no encontrado'}), 404
 
 @app.route('/inmueble/<id>/comentarios',methods=['GET'])
 def mostrar_comentarios(id:int):
+    """
+       Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
+
+       Según el tipo de inmueble (determinado por la presencia de ciertas características como jardín o piscina),
+       se seleccionan 5 comentarios aleatorios de la lista correspondiente.
+
+       Parámetros
+       ----------
+       id : int
+           El identificador único del inmueble.
+
+       Excepciones
+       ------------
+       Si el inmueble con el ID proporcionado no existe, se genera una respuesta de error con un código 404.
+
+       Devuelve
+       --------
+       tuple
+           Una tupla que contiene:
+           - un diccionario con los detalles del inmueble, incluyendo su tipo y los comentarios aleatorios seleccionados.
+           - un código de estado HTTP (200 si todo está correcto, 404 si no se encuentra el inmueble).
+
+       """
     inmueble = inmuebles.get(id)
 
     if not inmueble:
-        return {'error': 'Inmueble no encontrado'}, 404
+        return jsonify({"error": "Inmueble no encontrado"}), 404
 
     if 'jardin' in inmueble or 'tiene_piscina' in inmueble:
         tipo = 'casa'
@@ -445,7 +468,7 @@ def mostrar_comentarios(id:int):
     inmueble['tipo'] = tipo
     inmueble['comentarios'] = comentarios
 
-    return inmueble
+    return jsonify(inmueble), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

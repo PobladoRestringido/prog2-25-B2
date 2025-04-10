@@ -1,133 +1,149 @@
-"""
-El propósito de este fichero es mostrar un menú interactivo mediante el cual el usuario pueda interactuar con la API
-sin necesidad de saber nada sobre programación
-"""
+import requests
 
-from auth.auth import registrar_usuario, iniciar_sesion, usuarios_registrados
-from utils.filtros import filtrar_inmuebles
+BASE_URL = 'http://127.0.0.1:5000/'  # URL de la API Flask
 
-from API import inmuebles
-resenyas = {} # clave: id_inmueble, valor: lista de dicts con reseñas
 
-def mostrar_menu_principal() -> None:
-    """
-    Función que muestra el menú principal con todas las cosas que puede hacer el usuario
-    """
-    print("\n--- MENÚ ---")
-    print("1. Registrar usuario")
-    print("2. Iniciar sesión")
-    print("3. Ver usuarios registrados")
-    print("4. Salir")
+def mostrar_menu():
+    print("\nMenu de Opciones:")
+    print("1. Ver todos los inmuebles")
+    print("2. Ver inmueble por ID")
+    print("3. Registrar usuario")
+    print("4. Iniciar sesión")
+    print("5. Ver comentarios de un inmueble")
+    print("6. Añadir un nuevo inmueble")
+    print("7. Actualizar un inmueble")
+    print("8. Eliminar un inmueble")
+    print("0. Salir")
 
-def mostrar_menu_comprador():
-    print("\n--- MENÚ DEL COMPRADOR ---")
-    print("1. Ver inmuebles disponibles (filtrar)")
-    print("2. Reservar o comprar inmueble")
-    print("3. Ver mis reservas")
-    print("4. Cerrar sesión")
+#FUNCIONES PARA LLAMARLAS EN EL BUCLE
+def ver_inmuebles():
+    response = requests.get(f"{BASE_URL}inmuebles")
+    if response.status_code == 200:
+        inmuebles = response.json()
+        for inmueble in inmuebles:
+            print(inmueble)
+    else:
+        print("Error al obtener los inmuebles")
 
-def menu_comprador(usuario, publicaciones):
-    reservas = []  # Puedes vincular esto al usuario si implementas base de datos
 
-    while True:
-        mostrar_menu_comprador()
-        opcion = input("Selecciona una opción (1-4): ")
+def ver_inmueble_por_id():
+    inmueble_id = input("Introduce el ID del inmueble: ")
+    response = requests.get(f"{BASE_URL}inmuebles/{inmueble_id}")
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        print("Inmueble no encontrado")
 
-        if opcion == "1":
-            if not publicaciones:
-                print("No hay publicaciones disponibles.")
-                continue
 
-            try:
-                precio_max = float(input("Precio máximo (€): ") or 0)
-                zona = input("Zona: ") or None
-                superficie_min = float(input("Superficie mínima (m²): ") or 0)
-                tipo_alquiler = input("Tipo de alquiler: ") or None
-                capacidad_min = int(input("Capacidad mínima (personas): ") or 0)
+def registrar_usuario():
+    nombre = input("Introduce tu nombre de usuario: ")
+    contrasenya = input("Introduce tu contraseña: ")
+    tipo = input("Introduce el tipo de usuario (comprador, vendedor, administrador): ")
+    data = {
+        'nombre': nombre,
+        'contrasenya': contrasenya,
+        'tipo': tipo
+    }
+    response = requests.post(f"{BASE_URL}register", json=data)
+    if response.status_code == 201:
+        print("Usuario registrado con éxito.")
+    else:
+        print(response.json().get('error'))
 
-                precio_max = precio_max if precio_max > 0 else None
-                superficie_min = superficie_min if superficie_min > 0 else None
-                capacidad_min = capacidad_min if capacidad_min > 0 else None
 
-                resultados = filtrar_inmuebles(
-                    publicaciones,
-                    precio_max=precio_max,
-                    zona=zona,
-                    superficie_min=superficie_min,
-                    tipo_alquiler=tipo_alquiler,
-                    capacidad_min=capacidad_min
-                )
+def iniciar_sesion():
+    nombre = input("Introduce tu nombre de usuario: ")
+    contrasenya = input("Introduce tu contraseña: ")
+    data = {
+        'nombre': nombre,
+        'contrasenya': contrasenya
+    }
+    response = requests.post(f"{BASE_URL}login", json=data)
+    if response.status_code == 200:
+        print("Inicio de sesión exitoso.")
+    else:
+        print(response.json().get('error'))
 
-                if resultados:
-                    print(f"\nSe encontraron {len(resultados)} publicación(es):\n")
-                    for pub in resultados:
-                        print(pub)  # puedes usar pub.__str__ si está implementado
-                else:
-                    print("No se encontraron resultados.")
 
-            except ValueError:
-                print("Entrada inválida. Intenta de nuevo.")
+def ver_comentarios_inmueble():
+    inmueble_id = input("Introduce el ID del inmueble para ver los comentarios: ")
+    response = requests.get(f"{BASE_URL}inmueble/{inmueble_id}/comentarios")
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        print("Inmueble no encontrado")
 
-        elif opcion == "2":
-            print(">> Aquí se podría implementar lógica para reservar o comprar.")
-            # Podrías permitir elegir una publicación por ID
 
-        elif opcion == "3":
-            print(">> Aquí podrías mostrar las reservas vinculadas al usuario.")
+def anyadir_inmueble():
+    inmueble_id = input("Introduce el ID del nuevo inmueble: ")
+    dueño = input("Introduce el dueño del inmueble: ")
+    habitaciones = input("Introduce el número de habitaciones: ")
+    zona = input("Introduce la zona del inmueble: ")
+    data = {
+        'dueño': dueño,
+        'habitaciones': habitaciones,
+        'zona': zona
+    }
+    response = requests.post(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
+    if response.status_code == 200:
+        print(f"Inmueble {inmueble_id} añadido correctamente.")
+    else:
+        print(response.json().get('error'))
 
-        elif opcion == "4":
-            print("Sesión cerrada.")
-            break
 
-        else:
-            print("Opción no válida.")
+def actualizar_inmueble():
+    inmueble_id = input("Introduce el ID del inmueble a actualizar: ")
+    dueño = input("Introduce el nuevo dueño: ")
+    habitaciones = input("Introduce el nuevo número de habitaciones: ")
+    zona = input("Introduce la nueva zona: ")
+    data = {
+        'dueño': dueño,
+        'habitaciones': habitaciones,
+        'zona': zona
+    }
+    response = requests.put(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
+    if response.status_code == 200:
+        print(f"Inmueble {inmueble_id} actualizado correctamente.")
+    else:
+        print(response.json().get('error'))
+
+
+def eliminar_inmueble():
+    inmueble_id = input("Introduce el ID del inmueble a eliminar: ")
+    response = requests.delete(f"{BASE_URL}inmuebles/{inmueble_id}")
+    if response.status_code == 200:
+        print(f"Inmueble {inmueble_id} eliminado correctamente.")
+    else:
+        print(response.json().get('error'))
+
 
 def main():
-    publicaciones = []  # Aquí puedes cargar publicaciones de prueba
     while True:
-        mostrar_menu_principal()
-        opcion = input("Selecciona una opción (1-4): ")
+        mostrar_menu()
+        opcion = input("Selecciona una opción: ")
 
-        if opcion == "1":
-            nombre = input("Nombre de usuario: ")
-            contrasenya = input("Contraseña: ")
-            tipo = input("Tipo de usuario (comprador, vendedor, administrador): ").lower()
-            try:
-                usuario = registrar_usuario(nombre, contrasenya, tipo)
-                print(f"Usuario registrado correctamente: {usuario.nombre} ({tipo})")
-            except ValueError as e:
-                print("Error:", e)
-
-        elif opcion == "2":
-            nombre = input("Nombre de usuario: ")
-            contrasenya = input("Contraseña: ")
-            try:
-                usuario = iniciar_sesion(nombre, contrasenya)
-                print(f"Bienvenido, {usuario.nombre} ({usuario.__class__.__name__})")
-
-                # Solo mostramos el menú si es comprador
-                if usuario.__class__.__name__.lower() == "comprador":
-                    menu_comprador(usuario, publicaciones)
-                else:
-                    print("Este tipo de usuario no tiene menú implementado todavía.")
-
-            except ValueError as e:
-                print("Error:", e)
-
-        elif opcion == "3":
-            if usuarios_registrados:
-                print("\nUsuarios registrados:")
-                for u in usuarios_registrados:
-                    print(f"- {u.nombre} ({u.__class__.__name__})")
-            else:
-                print("No hay usuarios registrados.")
-
-        elif opcion == "4":
-            print("Gracias por usar el sistema. ¡Hasta luego!")
+        if opcion == '1':
+            ver_inmuebles()
+        elif opcion == '2':
+            ver_inmueble_por_id()
+        elif opcion == '3':
+            registrar_usuario()
+        elif opcion == '4':
+            iniciar_sesion()
+        elif opcion == '5':
+            ver_comentarios_inmueble()
+        elif opcion == '6':
+            anyadir_inmueble()
+        elif opcion == '7':
+            actualizar_inmueble()
+        elif opcion == '8':
+            eliminar_inmueble()
+        elif opcion == '0':
+            print("Saliendo...")
             break
-
         else:
-            print("Opción no válida.")
+            print("Opción no válida. Por favor, intenta de nuevo.")
+
 
 if __name__ == "__main__":
     main()
