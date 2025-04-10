@@ -51,7 +51,7 @@ def iniciar_sesion() -> tuple[Response, int]:
     for usuario in usuarios_registrados:
         if (usuario.nombre == nombre and
                 usuario.verificar_contrasenya(contrasenya)):
-            return jsonify(usuario), 200
+            return jsonify(usuario.dict()), 200
 
     return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
             401)
@@ -100,7 +100,7 @@ def registrar_usuario() -> tuple[Response, int]:
         return jsonify({'error': f"Tipo de usuario '{tipo}' no válido."}), 400
 
     usuarios_registrados.append(usuario)
-    return jsonify({'usuario': usuario}), 201
+    return jsonify({'usuario': usuario.to_dict()}), 201
 
 
 @app.route('/inmuebles', methods=['GET'])
