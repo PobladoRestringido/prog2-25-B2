@@ -10,7 +10,7 @@ def mostrar_menu():
     print("3. Registrar usuario")
     print("4. Iniciar sesión")
     print("5. Ver comentarios de un inmueble")
-    print("6. Escribir comentario sobre un inmueble")  
+    print("6. Escribir comentario sobre un inmueble")
     print("7. Añadir un nuevo inmueble")
     print("8. Actualizar un inmueble")
     print("9. Eliminar un inmueble")
