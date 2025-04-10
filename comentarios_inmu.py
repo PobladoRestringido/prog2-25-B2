@@ -63,3 +63,5 @@ comentarios_casas = [
     "Vivienda con cocina de diseño y amplios espacios para disfrutar.",
     "Una casa que lo tiene todo, ¡disfruta del lujo y la comodidad!"
 ]
+
+comentarios_usuario=[]

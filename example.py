@@ -10,12 +10,14 @@ def mostrar_menu():
     print("3. Registrar usuario")
     print("4. Iniciar sesión")
     print("5. Ver comentarios de un inmueble")
-    print("6. Añadir un nuevo inmueble")
-    print("7. Actualizar un inmueble")
-    print("8. Eliminar un inmueble")
+    print("6. Escribir comentario sobre un inmueble")  
+    print("7. Añadir un nuevo inmueble")
+    print("8. Actualizar un inmueble")
+    print("9. Eliminar un inmueble")
     print("0. Salir")
 
-#FUNCIONES PARA LLAMARLAS EN EL BUCLE
+
+# FUNCIONES PARA LLAMARLAS EN EL BUCLE
 def ver_inmuebles():
     response = requests.get(f"{BASE_URL}inmuebles")
     if response.status_code == 200:
@@ -73,6 +75,22 @@ def ver_comentarios_inmueble():
     else:
         print("Inmueble no encontrado")
 
+
+def escribir_comentario():
+    inmueble_id = input("Introduce el ID del inmueble sobre el que deseas escribir: ")
+    comentario = input("Introduce tu comentario: ")
+
+    if not comentario:
+        print("El comentario no puede estar vacío.")
+        return
+
+    # Enviar el comentario a la API
+    response = requests.post(f"{BASE_URL}inmueble/{inmueble_id}/escribir", json={"comentario": comentario})
+
+    if response.status_code == 200:
+        print("Comentario agregado con éxito!")
+    else:
+        print("Error al agregar el comentario:", response.json().get('error'))
 
 def anyadir_inmueble():
     inmueble_id = input("Introduce el ID del nuevo inmueble: ")
@@ -133,10 +151,12 @@ def main():
         elif opcion == '5':
             ver_comentarios_inmueble()
         elif opcion == '6':
-            anyadir_inmueble()
+            escribir_comentario()  # Nueva opción
         elif opcion == '7':
-            actualizar_inmueble()
+            anyadir_inmueble()
         elif opcion == '8':
+            actualizar_inmueble()
+        elif opcion == '9':
             eliminar_inmueble()
         elif opcion == '0':
             print("Saliendo...")
@@ -147,3 +167,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

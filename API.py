@@ -1,5 +1,5 @@
 import random
-from comentarios_inmu import comentarios_casas, comentarios_pisos
+from comentarios_inmu import comentarios_casas, comentarios_pisos,comentarios_usuario
 from flask import Flask, jsonify, request, Response
 from modelos.usuario import Usuario
 from modelos.comprador import Comprador
@@ -424,6 +424,37 @@ def eliminar_inmueble(id:int):
     else:
         return jsonify({"error": f'Inmueble {id} no encontrado'}), 404
 
+
+@app.route('/inmueble/<int:id>/escribir', methods=['POST'])
+def escribir_comentario(id):
+    """
+    Permite a un usuario escribir un comentario sobre un inmueble.
+
+    Parámetros
+    ----------
+    id : int
+        El identificador del inmueble para el cual se desea agregar el comentario.
+
+    Datos del cuerpo de la solicitud:
+    -------------------------------
+    comentario : str
+        El comentario que el usuario desea dejar.
+
+    Respuesta
+    ---------
+    Se devuelve una confirmación de que el comentario fue agregado correctamente.
+    """
+    # Obtener el comentario del cuerpo de la solicitud
+    comentario = request.json.get("comentario")
+
+    if not comentario:
+        return jsonify({"error": "Comentario no puede estar vacío"}), 400
+
+    # Guardar el comentario en la lista (con el ID del inmueble)
+    comentarios_usuario.append({"inmueble_id": id, "comentario": comentario})
+
+    return jsonify({"message": "Comentario agregado con éxito!"}), 200
+
 @app.route('/inmueble/<id>/comentarios',methods=['GET'])
 def mostrar_comentarios(id:int):
     """
@@ -467,6 +498,7 @@ def mostrar_comentarios(id:int):
 
     inmueble['tipo'] = tipo
     inmueble['comentarios'] = comentarios
+    inmueble['comentarios_usuario']=comentarios_usuario
 
     return jsonify(inmueble), 200
 
