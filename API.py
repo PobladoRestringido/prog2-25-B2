@@ -5,6 +5,7 @@ from modelos.usuario import Usuario
 from modelos.comprador import Comprador
 from modelos.administrador import Administrador
 from modelos.vendedor import Vendedor
+from serializacion.pickling import cargar_data, guardar_data
 
 app = Flask(__name__) #Creamos la aplicación Flask
 
@@ -283,7 +284,7 @@ def get_inmuebles() -> tuple[Response, int]:
 
     Returns
     -------
-    tuple(Response, int)
+    tuple[Response, int]
         JSON con la lista de inmuebles y HTTP 200 si la operación fue correcta.
     """
     data = cargar_data()  # de-serializamos los inmuebles

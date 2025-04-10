@@ -4,23 +4,53 @@ from serializacion.pickling import cargar_data, guardar_data
 
 BASE_URL = 'http://127.0.0.1:5000/'  # URL de la API Flask
 
+def mostrar_menu() -> int:
+    """
+    Función para mostrar las opciones al usuario y validar su elección
 
-def mostrar_menu():
-    print("\nMenu de Opciones:")
-    print("1. Ver todos los inmuebles")
-    print("2. Ver inmueble por ID")
-    print("3. Registrar usuario")
-    print("4. Iniciar sesión")
-    print("5. Ver comentarios de un inmueble")
-    print("6. Escribir comentario sobre un inmueble")
-    print("7. Añadir un nuevo inmueble")
-    print("8. Actualizar un inmueble")
-    print("9. Eliminar un inmueble")
-    print("0. Salir")
+    El propósito de esta función es mostrar al usuario las opciones que tiene
+    en este script de ejemplo, y pedirle que elija una
 
+    Retorna
+    -------
+    eleccion: int
+        - la eleccion del usuario (1-9)
+    """
+
+    while True:
+        print(f"\n{'-'*10}", 'Menu de Opciones', '-'*10)
+        print("1. Ver todos los inmuebles")
+        print("2. Ver inmueble por ID")
+        print("3. Registrar usuario")
+        print("4. Iniciar sesión")
+        print("5. Ver comentarios de un inmueble")
+        print("6. Escribir comentario sobre un inmueble")
+        print("7. Añadir un nuevo inmueble")
+        print("8. Actualizar un inmueble")
+        print("9. Eliminar un inmueble")
+        print("0. Salir")
+
+        try:
+            eleccion = int(input('Opcion: '))
+
+            if eleccion in range(10):
+                break
+            else:
+                print('Error: opción inválida')
+        except ValueError:
+            print('Error: la elección debe ser un número')
+
+    return eleccion
 
 # FUNCIONES PARA LLAMARLAS EN EL BUCLE
-def ver_inmuebles():
+def ver_inmuebles() -> None:
+    """
+    Función para mostrar la información de todos los inmuebles guardados
+
+    Esta función ejemplifica cómo obtener información sobre todos los
+    inmuebles guardados en la 'base de datos' de la API. Utiliza el endpoint
+    '/inmuebles' y el metodo http GET
+    """
     response = requests.get(f"{BASE_URL}inmuebles")
     if response.status_code == 200:
         inmuebles = response.json()
@@ -57,7 +87,6 @@ def ver_inmueble_por_id() -> str:
         return response.json()  # Devuelve los detalles del inmueble.
     else:
         return "Inmueble no encontrado"
-
 
 
 def registrar_usuario() -> str:
@@ -163,7 +192,6 @@ def ver_comentarios_inmueble() -> str:
         return "Inmueble no encontrado"
 
 
-
 def escribir_comentario() -> str:
     """
     Permite al usuario escribir un comentario sobre un inmueble y enviarlo a la API.
@@ -259,7 +287,6 @@ def anyadir_inmueble() -> str:
         return response.json().get('error', "Error desconocido.")
 
 
-
 def actualizar_inmueble() -> str:
     """
     Solicita datos al usuario para actualizar un inmueble existente y envía la solicitud a la API.
@@ -321,7 +348,6 @@ def actualizar_inmueble() -> str:
         return f"Inmueble {inmueble_id} actualizado correctamente."
     else:
         return response.json().get('error', "Error desconocido.")
-
 
 
 def eliminar_inmueble() -> str:
