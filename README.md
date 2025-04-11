@@ -40,7 +40,57 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 
 ## Instrucciones de instalación y ejecución
 [//]: # (Indicad aquí qué habría que hacer para ejecutar vuestra aplicación)
-*Under construction*
+
+### Requisitos previos
+
+Asegúrate de tener instalado en Ubuntu:
+
+- Python 3.10 o superior
+- pip (gestor de paquetes de Python)
+
+Puedes instalarlos ejecutando:
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip
+```
+
+---
+
+### Instrucciones de instalación
+
+1. **Clona o descarga este repositorio**
+
+2. **Instala las dependencias del proyecto**:
+   ```bash
+   pip3 install flask requests
+   ```
+
+3. **Asegúrate de que los módulos internos** (`modelos`, `serializacion`, etc.) estén correctamente ubicados en carpetas del proyecto.
+
+---
+
+### Ejecución
+
+#### 1. Ejecutar la API
+Desde la raíz del proyecto, ejecuta el archivo `API.py`:
+
+```bash
+python3 API.py
+```
+
+Esto levantará el servidor Flask en `http://127.0.0.1:5000/`.
+
+#### 2. Ejecutar el menú de consola
+
+En una **segunda terminal**, ejecuta:
+
+```bash
+python3 example.py
+```
+
+Desde ahí podrás interactuar con el sistema: registrar usuarios, iniciar sesión, consultar y modificar inmuebles, o gestionar comentarios.
+
 
 ## Resumen de la API
 [//]: # (Cuando tengáis la API, añadiréis aquí la descripción de las diferentes llamadas.)
