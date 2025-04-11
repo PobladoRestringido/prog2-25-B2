@@ -45,9 +45,9 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 ## Resumen de la API
 [//]: # (Cuando tengáis la API, añadiréis aquí la descripción de las diferentes llamadas.)
 [//]: # (Para la evaluación por pares, indicaréis aquí las diferentes opciones de vuestro menú textual, especificando para qué sirve cada una de ellas)
-*Nuestra API dispone de varias funciones:
-*-Permite al usuario registrarse e iniciar sesión (iniciar_sesion,registrar_usuario)
-*-Permite consultar los inmuebles, ya sea para ver el total de estos o si queremos filtrar por id y ver uno en especifico(get_inmuebles,get_inmueble_id)
-*-Permite poder eliminar, actualizar o añadir un inmueble(anyadir_inmuebles,actualizar_inmueble,eliminar_inmueble)
-*-Permite ver los comentarios que hay sobre un inmueble y el tipo de inmueble que es (mostrar_comentarios)
-*-Permite hacer tu propio comentario y mostrarlo en los comentarios del inmueble elegido(escribir_comentario)
+Nuestra API dispone de varias funciones:
+* Permite al usuario registrarse e iniciar sesión (iniciar_sesion,registrar_usuario)
+* Permite consultar los inmuebles, ya sea para ver el total de estos o si queremos filtrar por id y ver uno en especifico(get_inmuebles,get_inmueble_id)
+* Permite poder eliminar, actualizar o añadir un inmueble(anyadir_inmuebles,actualizar_inmueble,eliminar_inmueble)
+* Permite ver los comentarios que hay sobre un inmueble y el tipo de inmueble que es (mostrar_comentarios)
+* Permite hacer tu propio comentario y mostrarlo en los comentarios del inmueble elegido(escribir_comentario)
