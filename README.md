@@ -40,6 +40,7 @@ La más maravillosa API de gestión de una inmobiliaria de la historia.
 
 ## Instrucciones de instalación y ejecución
 [//]: # (Indicad aquí qué habría que hacer para ejecutar vuestra aplicación)
+
 ### Requisitos previos
 
 Asegúrate de tener instalado en Ubuntu:
@@ -90,7 +91,6 @@ python3 example.py
 
 Desde ahí podrás interactuar con el sistema: registrar usuarios, iniciar sesión, consultar y modificar inmuebles, o gestionar comentarios.
 
----
 
 ## Resumen de la API
 [//]: # (Cuando tengáis la API, añadiréis aquí la descripción de las diferentes llamadas.)
