@@ -1,3 +1,21 @@
+# PROG2-25-B2
+La más maravillosa API de gestión de una inmobiliaria de la historia.
+
+## Autores
+* (Coordinador) [Pablo Reig Sánchez](https://github.com/PobladoRestringido)
+* [Adrián Díez Agulló](https://github.com/Adrian-Diez-Agullo)
+* [Lucía Monteagudo Castellanos](https://github.com/Luciamcs)
+* [David Muñoz Torró](https://github.com/oppangangnamsta)
+* [Blanca Xifra Melendo](https://github.com/blancaxifra)
+* [Sama Al Adib Hawari](https://github.com/Sama14b)
+
+## Profesor
+[Miguel A. Teruel](https://github.com/materuel-ua)
+
+## Requisitos
+[//]: # (Indicad aquí los requisitos de vuestra aplicación, así como el alumno responsable de cada uno de ellos)
+
+* Permitirá descargar una foto del mapa de la zona seleccionada (haciendo uso de la API de Google Maps). (Adrian Díez) 
 
 * Redirigirá al usuario directamente a la url correspondiente de Google Maps, si éste así lo desea. (Sama Al Adib) 
 
