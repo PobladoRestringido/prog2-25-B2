@@ -3,6 +3,8 @@
 **Fecha:** 23 abril 2025
 
 # Modelos datos
-El propósito de este directorio es guardar los dibujos de los modelos de datos
-(entidad-relación extendido, relacional) que se crearon antes de implementar la
-base de datos del proyecto.
+El propósito de este directorio es guardar los dibujos de los modelos de
+datos (Entidad Relación Extendido, modelo relacional) de la base de datos 
+del proyecto. De este modo se facilita su comprensión por parte de los 
+otros miembros del grupo, así como su futuro mantenimiento.
+
