@@ -1,5 +1,3 @@
-from modelos.habitacion import Habitacion
-
 class Salon:
     """
         Clase que representa un salón dentro de un entorno doméstico o institucional.

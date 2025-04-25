@@ -2,10 +2,10 @@ import random
 from comentarios_inmu import comentarios_casas, comentarios_pisos,comentarios_usuario
 from flask import Flask, jsonify, request, Response
 from modelos.usuario import Usuario
-from modelos.comprador import Comprador
-from modelos.administrador import Administrador
-from modelos.vendedor import Vendedor
-from serializacion.pickling import cargar_data, guardar_data
+from modelos.usuario.comprador import Comprador
+from modelos.usuario.administrador import Administrador
+from modelos.usuario.vendedor import Vendedor
+from serializacion.pickling import cargar_data
 
 app = Flask(__name__) #Creamos la aplicación Flask
 

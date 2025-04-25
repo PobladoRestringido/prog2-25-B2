@@ -1,4 +1,4 @@
-from modelos.habitacion import Habitacion
+from modelos.habitacion.habitacion import Habitacion
 
 class Banyo(Habitacion):
     """

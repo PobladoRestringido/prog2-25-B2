@@ -35,7 +35,8 @@ class Usuario:
         Verifica si la contraseña en texto plano concuerda con la
         contraseña encriptada.
     to_dict() -> dict
-        Devuelve un diccionario con la información del usuario.
+        Devuelve un diccionario con la información del usuario (se usará en
+        pickling).
     """
 
     def __init__(self, nombre: str, contrasenya: str):

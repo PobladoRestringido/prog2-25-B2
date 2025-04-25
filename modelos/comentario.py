@@ -1,4 +1,4 @@
-from modelos.comprador import Comprador  # Lo importamos para poder usarlo en type-hinting
+from modelos.usuario.comprador import Comprador  # Lo importamos para poder usarlo en type-hinting
 
 class Comentario:
     """
