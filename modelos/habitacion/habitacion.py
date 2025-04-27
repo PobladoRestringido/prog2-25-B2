@@ -53,4 +53,6 @@ class Habitacion:
         with open('contador_habitaciones.txt', 'w') as file:
             file.write(str(self.__class__.contador_habitaciones))
 
-
+# [todo] puede ser beneficioso crear un método abstracto __str__ en la clase
+#  `habitacion`, para indicar que todas las hijas deberían tener una
+#  representación en str distinta dependiendo de sus atributos

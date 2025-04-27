@@ -1,5 +1,5 @@
 from typing import List  # Esto permite utilizar List en type-hinting
-from modelos.inmueble import Inmueble  # Esto permite utilizar Inmueble en type-hinting
+from modelos.inmueble.inmueble import Inmueble  # Esto permite utilizar Inmueble en type-hinting
 
 class ZonaGeografica:
     """

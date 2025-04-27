@@ -46,3 +46,6 @@ class Cocina(Habitacion):
         self.__tiene_fregadero = tiene_fregadero
         self.__tiene_mesa = tiene_mesa
 
+    # [todo] implementar el método __str__, que describa cada cocina con
+    #  respecto a las características que presenta
+

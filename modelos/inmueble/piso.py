@@ -1,5 +1,5 @@
 # piso.py
-from modelos.inmueble import Inmueble
+from modelos.inmueble.inmueble import Inmueble
 
 class Piso(Inmueble):
     """
