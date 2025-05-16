@@ -5,7 +5,7 @@
 
 _(La **NEGRITA** en mayúsculas indica conjuntos de entidades. El texto en 
 ``bloques`` de
-código indica atributos)._
+código indica atributos. La **negrita** en cursiva indica relaciones)._
 
 La base de datos guardará información sobre los usuarios e inmuebles de nuestra
 aplicación.
@@ -16,19 +16,18 @@ inmuebles de los
 que son propietarios**_.
 Existirán varios tipos de **USUARIO**: compradores, vendedores y
 administradores. De los **COMPRADORES** se conocerán _**los comentarios que han
-dejado**_, así como los inmuebles que les interesan y . De
-los **VENDEDORES** se conocerán las publicaciones que han creado, así como los
-inmuebles que les pertenecen. De los **ADMINISTRADORES** no se necesitará
+dejado**_, así como **_los inmuebles que les interesan_** y . De
+los **VENDEDORES** se conocerán **_las publicaciones que han creado_**. De los **ADMINISTRADORES** no se necesitará
 información adicional.
 
-De cada **INMUEBLE** se conocerá su ``id``, que será único, las
-``habitaciones`` que lo conforman y la ``zona`` geográfica a la que pertenece.
+De cada **INMUEBLE** se conocerá su ``id``, que será único, **_las
+habitaciones que lo conforman_** y la ``zona`` geográfica a la que pertenece.
 
 Asimismo existirán varios tipos de inmueble: pisos y viviendas unifamiliares.
 De los **PISOS** se guardará la ``planta`` en la que están, así como
 información adicional que ayude a identificarlos (``puerta``, ``ascensor``,
 etc.). De las **VIVIENDAS UNIFAMILIARES** se guardará si tienen ``piscina``, e
-información sobre su **jardín**.
+información sobre su ``jardin``.
 
 Como comentamos, cada inmueble tendrá una lista de **HABITACIONES**, de las
 cuales también querremos guardar información. Cada habitación se identificará
@@ -49,8 +48,8 @@ conocer si tienen
 
 En cuanto a las **PUBLICACIONES**, cada uno se identificará por un
 ``identificador`` numérico. También querremos conocer la persona que las ha creado,
-así como el inmueble que en ella se publicita, los comentarios dejados bajo
-estas, y el``precio`` con el que se ha listado el inmueble en la publicación (un inmueble no tiene valor intrínseco, sino que depende del precio que desee
+así como **_el inmueble que en ella se publicita_**, **_los comentarios dejados bajo
+estas_**, y el``precio`` con el que se ha listado el inmueble en la publicación (un inmueble no tiene valor intrínseco, sino que depende del precio que desee
 ponerle la persona en cada publicación). Finalmente, también querremos poder
 guardar cualquier aclaración o ``descripción`` adicional que el vendedor
 considere adecuada, así como la ``fecha`` en la que se creó la publicación.
