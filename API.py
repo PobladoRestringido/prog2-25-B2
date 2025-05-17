@@ -1,13 +1,17 @@
 import random
 from comentarios_inmu import comentarios_casas, comentarios_pisos,comentarios_usuario
 from flask import Flask, jsonify, request, Response
-from modelos.usuario import Usuario
+from modelos.usuario.usuario import usuarios
 from modelos.usuario.comprador import Comprador
 from modelos.usuario.administrador import Administrador
 from modelos.usuario.vendedor import Vendedor
 from serializacion.pickling import cargar_data
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 
 app = Flask(__name__) #Creamos la aplicación Flask
+app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
+jwt = JWTManager(app)
+usuarios_registrados = []
 
 @app.route('/') #Ruta inicial de la api
 def hola():
@@ -21,7 +25,6 @@ def hola():
     """
     return 'Bienvenido a la API de inmuebles'
 
-usuarios_registrados : list[Usuario, ...] = [] # todo implementar pickling
 # inicio sesión
 @app.route('/login', methods=['POST'])
 def iniciar_sesion() -> tuple[Response, int]:
@@ -51,7 +54,11 @@ def iniciar_sesion() -> tuple[Response, int]:
     for usuario in usuarios_registrados:
         if (usuario.nombre == nombre and
                 usuario.verificar_contrasenya(contrasenya)):
-            return jsonify(usuario.dict()), 200
+            access_token = create_access_token(
+                identity=usuario.nombre,
+                additional_claims={"rol": usuario.rol}
+            )
+            return jsonify({"access_token": access_token}), 200
 
     return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
             401)
@@ -78,7 +85,7 @@ def registrar_usuario() -> tuple[Response, int]:
     data = request.get_json()
     nombre = data.get('nombre')
     contrasenya = data.get('contrasenya')
-    tipo = data.get('tipo')
+    rol = data.get('rol')
 
     # Validación básica de entrada.
     if not nombre or not contrasenya:
@@ -90,17 +97,22 @@ def registrar_usuario() -> tuple[Response, int]:
             return (jsonify({'error': 'El nombre de usuario ya está en uso.'}),
                     409)
 
-    if tipo == "comprador":
+    if rol == "comprador":
         usuario = Comprador(nombre, contrasenya)
-    elif tipo == "vendedor":
+    elif rol == "vendedor":
         usuario = Vendedor(nombre, contrasenya)
-    elif tipo == "administrador":
+    elif rol == "administrador":
         usuario = Administrador(nombre, contrasenya)
     else:
-        return jsonify({'error': f"Tipo de usuario '{tipo}' no válido."}), 400
+        return jsonify({'error': f"Rol de usuario '{rol}' no válido."}), 400
 
     usuarios_registrados.append(usuario)
-    return jsonify({'usuario': usuario.to_dict()}), 201
+    access_token = create_access_token(
+        identity=usuario.nombre,
+        additional_claims={"rol": usuario.rol}
+    )
+
+    return jsonify({'usuario': usuario.to_dict(),'access_token': access_token}), 201
 
 '''
 VINCULARLO CON LA BASE DE DATOS FUNCIONAL

@@ -39,7 +39,7 @@ class Usuario:
         pickling).
     """
 
-    def __init__(self, nombre: str, contrasenya: str):
+    def __init__(self, nombre: str, contrasenya: str,rol:str):
         """
         Inicializa una nueva instancia de Usuario.
 
@@ -52,6 +52,7 @@ class Usuario:
         """
         self.__nombre = nombre
         self.__contrasenya = self._encriptar_contrasenya(contrasenya)
+        self.__rol= rol
 
     @property
     def nombre(self):
@@ -97,6 +98,18 @@ class Usuario:
         """
         return self.__contrasenya == self._encriptar_contrasenya(contrasenya)
 
+    @property
+    def rol(self):
+        """
+            Obtiene el rol del usuario.
+
+            Retorno
+            -----------
+            str
+                El rol asignado al usuario
+        """
+        return self.__rol
+
     def to_dict(self) -> dict:
         """
         Devuelve una representación del usuario en forma de diccionario.
@@ -110,5 +123,13 @@ class Usuario:
         """
         return {
             "nombre": self.__nombre,
-            "contrasenya": self.__contrasenya
+            "contrasenya": self.__contrasenya,
+            "rol":self.__rol
         }
+
+
+usuarios = {
+    "ana": Usuario("ana", "1234", "comprador"),
+    "jose": Usuario("jose", "abcd", "vendedor"),
+    "admin": Usuario("admin", "admin", "admin")
+}
