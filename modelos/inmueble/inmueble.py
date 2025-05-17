@@ -28,7 +28,7 @@ class Inmueble(ABC):
     contador_inmuebles = 0 # usado para asignar un identificador a cada
     # inmueble
 
-    def __init__(self, duenyo: 'Persona',habitaciones : list['Habitacion', ...],zona : 'ZonaGeografica') -> None:
+    def __init__(self, duenyo: 'Persona',habitaciones : list['Habitacion', ...],zona :'ZonaGeografica',nombre:str,descripcion:str,precio:float) -> None:
         """
         Metodo constructor de la clase Inmueble
 
@@ -54,6 +54,9 @@ class Inmueble(ABC):
         self.__duenyo = duenyo
         self.__habitaciones = habitaciones
         self.__zona = zona
+        self.__descripcion = descripcion
+        self.__nombre= nombre
+        self.__precio = precio
 
     @abstractmethod
     def tipo(self) -> str:
@@ -86,18 +89,37 @@ class Inmueble(ABC):
         """
 
         return (f"Inmueble ID: {self.__id}\n"
+                f"Nombre: {self.__nombre}\n"
+                f"Descripción: {self.__descripcion}\n"
                 f"Dueño: {self.__duenyo.nombre}\n"
                 f"Zona: {self.__zona.nombre}\n"
-                f'Nº habitaciones: {len(self)}')
+                f"Nº habitaciones: {len(self)}\n"
+                f"Precio: {self.__precio} €"
+                )
 
     def get_id(self):
         return self.__id
 
-    def get_duenyo(self):
+    @property
+    def duenyo(self):
         return self.__duenyo
 
-    def get_zona(self):
+    @property
+    def zona(self):
         return self.__zona
 
-    def get_habitaciones(self):
+    @property
+    def habitaciones(self):
         return self.__habitaciones
+
+    @property
+    def nombre(self):
+        return self.__nombre
+
+    @property
+    def descripcion(self):
+        return self.__descripcion
+
+    @property
+    def precio(self):
+        return self.__precio

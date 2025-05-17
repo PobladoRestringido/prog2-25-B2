@@ -118,6 +118,7 @@ def registrar_usuario() -> tuple[Response, int]:
 SQL
 '''
 @app.route('/inmuebles', methods=['GET'])
+@jwt_required()
 def get_inmuebles() -> tuple[Response, int]:
     """
     Función que obtiene y devuelve la lista de todos los inmuebles registrados.
@@ -134,6 +135,7 @@ def get_inmuebles() -> tuple[Response, int]:
 SQL
 '''
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
+@jwt_required()
 def get_inmueble_id(id:int):
     """
     Función que nos muestra un inmueble por su ID
@@ -150,15 +152,20 @@ def get_inmueble_id(id:int):
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
     """
+    rol=get_jwt().get('rol')
+
+    if rol not in ['vendedor','administrador']:
+        return jsonify ({"error": "No tienes permiso para ver este inmueble"}), 403
 
     try:
-        inmueble = inmuebles[id]
-        inmueble_id = {"id": id}
-        for clave, valor in inmueble.items():
-            inmueble_id[clave] = valor
-        return jsonify(inmueble_id), 200
-    except KeyError:
-        return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
+            inmueble = inmuebles[id]
+            inmueble_info = {"id": id}
+            for clave, valor in inmueble.items():
+                inmueble_info[clave] = valor
+            return jsonify(inmueble_info), 200
+        except KeyError:
+            return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
+
 
 '''
 VINCULARLO CON LA BASE DE DATOS FUNCIONAL

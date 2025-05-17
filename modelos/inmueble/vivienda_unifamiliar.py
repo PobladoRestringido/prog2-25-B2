@@ -31,19 +31,12 @@ class ViviendaUnifamiliar(Inmueble):
         jardin : Optional[Jardin], optional
             Jardín de la vivienda, si tiene (por defecto None).
         """
-        super().__init__(duenyo, habitaciones, zona)
-        self.__nombre = nombre
-        self.__descripcion = descripcion
-        self.__precio = precio
+        super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
         self.__tiene_piscina = tiene_piscina
         self.__jardin = jardin
 
     def tipo(self) -> str:
         return "vivienda unifamiliar"
-
-    @property
-    def nombre(self) -> str:
-        return self.__nombre
 
     @property
     def descripcion(self) -> str:
@@ -81,3 +74,17 @@ class ViviendaUnifamiliar(Inmueble):
             f"Precio: {self.precio} €\n"
             f"Zona: {self.zona}"
         )
+
+    def to_dict(self):
+        return {
+            "tipo": "vivienda_unifamiliar",
+            "nombre": self.nombre,
+            "descripcion": self.descripcion,
+            "precio": self.precio,
+            "zona": self.zona.nombre,
+            "pais": self.zona.pais,
+            "duenyo": self.duenyo.nombre,
+            "tiene_piscina": self.tiene_piscina,
+            "jardin": self.jardin,
+            "habitaciones": [str(hab) for hab in self.habitaciones]
+        }

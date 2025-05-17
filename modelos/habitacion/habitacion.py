@@ -1,5 +1,4 @@
 # habitacion.py
-# Contribuidores: Pablo Reig, Sama
 
 class Habitacion:
     """
@@ -53,6 +52,11 @@ class Habitacion:
         with open('contador_habitaciones.txt', 'w') as file:
             file.write(str(self.__class__.contador_habitaciones))
 
-# [todo] puede ser beneficioso crear un método abstracto __str__ en la clase
-#  `habitacion`, para indicar que todas las hijas deberían tener una
-#  representación en str distinta dependiendo de sus atributos
+    def __str__(self):
+        return f"Habitación {self.__id} - {self.__superficie} m²"
+
+    def to_dict(self):
+        return {
+            "id": self.__id,
+            "superficie": self.__superficie
+        }

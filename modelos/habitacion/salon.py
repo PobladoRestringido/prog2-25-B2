@@ -1,4 +1,6 @@
-class Salon:
+from modelos.habitacion.habitacion import Habitacion
+
+class Salon(Habitacion):
     """
         Clase que representa un salón dentro de un entorno doméstico o institucional.
 
@@ -14,11 +16,11 @@ class Salon:
             Indica si el salón tiene una mesa recreativa (ej. futbolín, billar).
 
         """
-    def __init__(self):
-        def __init__(self, superficie: float, tiene_televisor: bool = False, tiene_sofa: bool = False,
+
+    def __init__(self, superficie: float, tiene_televisor: bool = False, tiene_sofa: bool = False,
                      tiene_mesa_recreativa: bool = False) -> None:
-            """
-           Inicializa una nueva instancia de la clase Salon.
+        """
+            Inicializa una nueva instancia de la clase Salon.
 
            Parameters
            ----------
@@ -31,9 +33,28 @@ class Salon:
            tiene_mesa_recreativa : bool, optional
                Indica si el salón tiene una mesa recreativa (por defecto False).
                    """
-            super().__init__(superficie)
-            self.__tiene_televisor = tiene_televisor
-            self.__tiene_sofa = tiene_sofa
-            self.__tiene_mesa_recreativa = tiene_mesa_recreativa
-        
+        super().__init__(superficie)
+        self.__tiene_televisor = tiene_televisor
+        self.__tiene_sofa = tiene_sofa
+        self.__tiene_mesa_recreativa = tiene_mesa_recreativa
 
+    def __str__(self):
+        extras = []
+        if self.tiene_televisor:
+            extras.append("televisor")
+        if self.tiene_sofa:
+            extras.append("sofá")
+        if self.tiene_mesa_recreativa:
+            extras.append("mesa recreativa")
+        extras_str = ", ".join(extras) if extras else "sin extras"
+        return f"Salón {extras_str} - {super().__str__()}"
+
+    def to_dict(self):
+        base = super().to_dict()
+        base.update({
+            "tipo": "salon",
+            "tiene_televisor": self.__tiene_televisor,
+            "tiene_sofa": self.__tiene_sofa,
+            "tiene_mesa_recreativa": self.__tiene_mesa_recreativa
+        })
+        return base

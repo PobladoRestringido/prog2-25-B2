@@ -1,5 +1,6 @@
-from typing import List  # Esto permite utilizar List en type-hinting
-from modelos.inmueble.inmueble import Inmueble  # Esto permite utilizar Inmueble en type-hinting
+from modelos.inmueble.inmueble import Inmueble
+from typing import List
+
 
 class ZonaGeografica:
     """
@@ -17,7 +18,7 @@ class ZonaGeografica:
         Lista de inmuebles ubicados en esta zona.
     """
 
-    def __init__(self, nombre: str, pais: str, inmuebles: List[Inmueble,...]) -> None:
+    def __init__(self, nombre: str, pais: str, inmuebles: List['Inmueble']=None) -> None:
         """
         Inicializa una nueva instancia de la clase ZonaGeografica.
 
@@ -35,4 +36,29 @@ class ZonaGeografica:
         self.__nombre = nombre
         self.__pais = pais
         self.__inmuebles = inmuebles
+
+    def __str__(self):
+        return f"{self.__nombre} ({self.__pais})"
+
+    def to_dict(self):
+        return {
+            "nombre": self.__nombre,
+            "pais": self.__pais,
+            "inmuebles": [inmueble.nombre for inmueble in self.__inmuebles]  # solo los nombres
+        }
+
+    @property
+    def nombre(self):
+        return self.__nombre
+
+    @property
+    def pais(self):
+        return self.__pais
+
+    @property
+    def inmuebles(self):
+        return self.__inmuebles
+
+    def agregar_inmueble(self, inmueble):
+        self.__inmuebles.append(inmueble)
 

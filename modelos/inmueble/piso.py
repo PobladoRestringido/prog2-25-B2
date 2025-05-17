@@ -51,10 +51,7 @@ class Piso(Inmueble):
         ValueError
             Si el número de planta es negativo.
         """
-        super().__init__(habitaciones, zona, duenyo)
-        self.__nombre = nombre
-        self.__descripcion = descripcion
-        self.__precio = precio
+        super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
         self.__planta = planta
         self.__tiene_ascensor = ascensor
 
@@ -65,18 +62,6 @@ class Piso(Inmueble):
     @property
     def tiene_ascensor(self) -> bool:
         return self.__tiene_ascensor
-
-    @property
-    def nombre(self) -> str:
-        return self.__nombre
-
-    @property
-    def descripcion(self) -> str:
-        return self.__descripcion
-
-    @property
-    def precio(self) -> float:
-        return self.__precio
 
     @property
     def planta(self) -> int:
@@ -102,3 +87,17 @@ class Piso(Inmueble):
                 f"Precio: {self.precio} €\n"
                 f"Zona: {self.zona}")
         return base
+
+    def to_dict(self):
+        return {
+            "tipo": "piso",
+            "nombre": self.nombre,
+            "descripcion": self.descripcion,
+            "precio": self.precio,
+            "zona": self.zona.nombre,
+            "pais": self.zona.pais,
+            "duenyo": self.duenyo.nombre,
+            "planta": self.planta,
+            "ascensor": self.tiene_ascensor,
+            "habitaciones": [str(hab) for hab in self.habitaciones]
+        }
