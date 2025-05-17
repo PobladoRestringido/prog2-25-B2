@@ -1,6 +1,4 @@
 # usuario.py
-# Contribuidores: Blanca Xifra, Pablo Reig
-
 import hashlib
 
 class Usuario:

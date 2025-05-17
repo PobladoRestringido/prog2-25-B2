@@ -25,7 +25,7 @@ class Piso(Inmueble):
         existencia de ascensor
     """
 
-    def __init__(self, nombre : str, descripcion : str, habitaciones : list['Habitacion'], precio : float, zona : 'ZonaGeográfica', duenyo : 'Persona', planta : int, ascensor : bool = False) -> None:
+    def __init__(self, nombre : str, habitaciones : list['Habitacion'],zona : 'ZonaGeográfica',descripcion : str, precio : float, duenyo : 'Persona', planta : int, ascensor : bool = False) -> None:
         """
         Parámetros
         ----------
@@ -51,15 +51,32 @@ class Piso(Inmueble):
         ValueError
             Si el número de planta es negativo.
         """
-        super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
+        super().__init__(habitaciones, zona, duenyo)
+        self.__nombre = nombre
+        self.__descripcion = descripcion
+        self.__precio = precio
+        self.__planta = planta
         self.__tiene_ascensor = ascensor
+
         if planta < 0:
             raise ValueError("La planta no puede ser negativa")
-        self.__planta = planta
+
 
     @property
     def tiene_ascensor(self) -> bool:
         return self.__tiene_ascensor
+
+    @property
+    def nombre(self) -> str:
+        return self.__nombre
+
+    @property
+    def descripcion(self) -> str:
+        return self.__descripcion
+
+    @property
+    def precio(self) -> float:
+        return self.__precio
 
     @property
     def planta(self) -> int:
@@ -70,6 +87,9 @@ class Piso(Inmueble):
         if nueva_planta < 0:
             raise ValueError("La planta no puede ser negativa")
         self.__planta = nueva_planta
+
+    def tipo(self)-> str:
+        return "piso"
 
     def __len__(self):
         return len(self.habitaciones)
