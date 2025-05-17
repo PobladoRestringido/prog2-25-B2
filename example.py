@@ -1,5 +1,7 @@
 import requests
 from serializacion.pickling import cargar_data, guardar_data
+import webbrowser
+import urllib.parse
 
 BASE_URL = 'http://127.0.0.1:5000/'  # URL de la API Flask
 
@@ -53,13 +55,21 @@ def ver_inmuebles() -> None:
     response = requests.get(f"{BASE_URL}inmuebles")
     if response.status_code == 200:
         inmuebles = response.json()
-        for inmueble in inmuebles:
-            print(inmueble)
+        if isinstance(inmuebles, dict):
+            print("-" * 20)
+            for inmueble_id, datos in inmuebles.items():
+                print(f"ID: {inmueble_id}")
+                print(f"Dueño: {datos.get('dueño', '—')}")
+                print(f"Habitaciones: {datos.get('habitaciones', '—')}")
+                print(f"Zona: {datos.get('zona', '—')}")
+                print(f"Precio de venta: {datos.get('precio de venta', '—')}")
+                print(f"Precio de alquiler por mes: {datos.get('precio de alquiler/por mes', '—')}")
+                print("-" * 20)
     else:
         print("Error al obtener los inmuebles")
 
 
-def ver_inmueble_por_id() -> str:
+def ver_inmueble_por_id(id) -> dict | str:
     """
     Muestra los detalles de un inmueble a partir de su ID.
 
@@ -79,13 +89,26 @@ def ver_inmueble_por_id() -> str:
     -----
     La función realiza una solicitud GET a la API para obtener los detalles de un inmueble usando su ID.
     """
-    inmueble_id: str = input("Introduce el ID del inmueble: ")
-    response = requests.get(f"{BASE_URL}inmuebles/{inmueble_id}")
-
-    if response.status_code == 200:
-        return response.json()  # Devuelve los detalles del inmueble.
-    else:
+    response = requests.get(f"{BASE_URL}inmuebles/{id}")
+    if response.status_code != 200:
         return "Inmueble no encontrado"
+    
+    inmueble = response.json()
+
+    print(f"ID:       {inmueble.get('id')}")
+    print(f"Dirección:{inmueble.get('direccion', '—')}")
+    print(f"Precio:   {inmueble.get('precio', '—')}")
+
+    direccion = inmueble.get('direccion') or inmueble.get('zona', '')
+    if direccion:
+        if input("¿Abrir en Google Maps? (s/n): ").strip().lower() == 's':
+            query = urllib.parse.quote(direccion)
+            url = f"https://www.google.com/maps/search/?api=1&query={query}"
+            webbrowser.open(url)
+    else:
+        print("No se encontró la dirección del inmueble.")
+
+    return inmueble
 
 
 def registrar_usuario() -> str:
@@ -251,8 +274,17 @@ def anyadir_inmueble() -> str:
         Un mensaje de confirmación si el inmueble fue añadido correctamente, o un mensaje de error si ocurrió un fallo.
     """
     inmueble_id: str = input("Introduce el ID del nuevo inmueble: ")
-    if inmueble_id in inmuebles:
-        return f"Error: El inmueble con ID {inmueble_id} ya existe."
+    resp_get = requests.get(f"{BASE_URL}inmuebles")
+    if resp_get.status_code != 200:
+        return "Error al obtener la lista de inmuebles."
+    
+    inmuebles = resp_get.json()
+
+    existing_ids = [str(i.get('id')) for i in inmuebles]
+
+    if inmueble_id in existing_ids:
+        return f"Error: Ya existe un inmueble con ID {inmueble_id}."
+
 
     dueño: str = input("Introduce el dueño del inmueble: ")
     if dueño.isdigit():
@@ -263,6 +295,9 @@ def anyadir_inmueble() -> str:
         return "Error: El campo 'habitaciones' debe ser un número entero."
 
     zona: str = input("Introduce la zona del inmueble: ")
+    direccion = input("Introduce la dirección del inmueble: ")
+    if not direccion:
+        return "Error: La dirección no puede estar vacía."
 
     precio_venta: str = input("Introduce el precio de venta: ")
     try:
@@ -280,6 +315,7 @@ def anyadir_inmueble() -> str:
         'dueño': dueño,
         'habitaciones': int(habitaciones),
         'zona': zona,
+        'direccion': direccion,
         'precio de venta': precio_venta_float,
         'precio de alquiler/por mes': precio_alquiler_float
     }
@@ -415,7 +451,13 @@ def main()-> None:
         if opcion == 1:
             ver_inmuebles()
         elif opcion == 2:
-            ver_inmueble_por_id()
+            inmueble_id = input("Introduce el ID del inmueble: ")
+            inmueble = ver_inmueble_por_id(inmueble_id)
+            if not inmueble:
+                print("Inmueble no encontrado")
+            else:
+                print(f"Datos del inmueble: {inmueble}")
+                
         elif opcion == 3:
             print(registrar_usuario())
         elif opcion == 4:
@@ -425,7 +467,7 @@ def main()-> None:
         elif opcion == 6:
             escribir_comentario()  # Nueva opción
         elif opcion == 7:
-            anyadir_inmueble()
+            print(anyadir_inmueble())
         elif opcion == 8:
             actualizar_inmueble()
         elif opcion == 9:

@@ -9,6 +9,11 @@ from serializacion.pickling import cargar_data, guardar_data
 
 app = Flask(__name__) #Creamos la aplicación Flask
 
+data = cargar_data()
+inmuebles = data.get("inmuebles", {})
+usuarios_registrados = data.get("usuarios", [])
+comentarios_usuario = data.get("comentarios_usuario", [])
+
 @app.route('/') #Ruta inicial de la api
 def hola():
     """
@@ -113,8 +118,7 @@ def get_inmuebles() -> tuple[Response, int]:
     tuple[Response, int]
         JSON con la lista de inmuebles y HTTP 200 si la operación fue correcta.
     """
-    data = cargar_data()  # de-serializamos los inmuebles
-    return jsonify(data['inmuebles']), 200
+    return jsonify(inmuebles), 200
 
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 def get_inmueble_id(id:int):
@@ -133,15 +137,12 @@ def get_inmueble_id(id:int):
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
     """
-
-    try:
-        inmueble = inmuebles[id]
-        inmueble_id = {"id": id}
-        for clave, valor in inmueble.items():
-            inmueble_id[clave] = valor
-        return jsonify(inmueble_id), 200
-    except KeyError:
+    if id not in inmuebles:
         return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
+    
+    datos = inmuebles[id].copy()
+    datos['id'] = id
+    return jsonify(datos), 200
 
 
 @app.route('/inmuebles/<id>', methods=['POST'])#Ruta para crear un nuevo inmueble en la base de datos
@@ -161,23 +162,40 @@ def anyadir_inmuebles(id:int):
     -código de estado: 200 si la solicitud funciona sin ningún problema
                        404 si la solicitud tiene algún problema
     """
+    datos = request.get_json() or {}
+    if id in inmuebles:
+        return jsonify({'error': 'Faltan campos obligatorios (dueño, habitaciones, zona, dirección)'}), 400
 
-    if id not in inmuebles:
-        datos = request.get_json()
+    necesario = {
+    'dueño',
+    'habitaciones',
+    'zona',
+    'direccion',
+    'precio de venta',
+    'precio de alquiler/por mes'
+    }
 
-        necesario = {'dueño', 'habitaciones', 'zona'}
-        if not datos or not necesario.issubset(datos.keys()):
-            return jsonify({'error': 'Faltan campos obligatorios (dueño, habitaciones, zona)'}), 400
+    if not necesario.issubset(datos.keys()):
+        faltan = ", ".join(necesario - datos.keys())
+        return jsonify({'error': f'Faltan campos obligatorios: {faltan}'}), 400
 
-        inmuebles[id] = {
-            'dueño': datos['dueño'],
-            'habitaciones': datos['habitaciones'],
-            'zona': datos['zona']
-        }
-        return jsonify({'mensaje': f'Inmueble {id} añadido correctamente'}), 200
-    else:
-        return jsonify({'error': f'Inmueble {id} ya existe'}), 409
+    inmuebles[id] = {
+        'dueño': datos['dueño'],
+        'habitaciones': datos['habitaciones'],
+        'zona': datos['zona'],
+        'direccion': datos['direccion'],
+        'precio de venta': datos['precio de venta'],
+        'precio de alquiler/por mes': datos['precio de alquiler/por mes']
+    }
 
+    guardar_data({
+        "inmuebles": inmuebles,
+        "usuarios": usuarios_registrados,
+        "comentarios_usuario": comentarios_usuario
+    })
+
+    return jsonify({'mensaje': f'Inmueble {id} añadido correctamente'}), 201
+    
 @app.route('/inmuebles/<id>', methods=['PUT'])#Ruta para actualizar los inmuebles
 def actualizar_inmueble(id:int):
     """
