@@ -6,21 +6,21 @@ class Inmueble(ABC):
 
     Atributos
     ---------
-    nombre : str
+    nombre: str
         el nombre del inmueble
-    descripcion : str
+    descripcion: str
         una descripcion opcional de las caracteristicas del inmueble
-    habitaciones : list[Habitacion, ...]
+    habitaciones: list[Habitacion, ...]
         una lista con las habitaciones que forman parte del inmueble
-    precio : float
+    precio: float
         el precio de mercado (en euros €) del inmueble
-    zona : Zona
+    zona: Zona
         la zona geografica a la que pertenece el inmueble
 
     Metodos
     -------
-    __init__(self, nombre : str, descripcion : str,
-    habitaciones : list['Habitacion', ...], precio : float, zona : 'Zona')
+    __init__(self, nombre: str, descripcion: str,
+    habitaciones: list['Habitacion', ...], precio: float, zona: 'Zona')
     -> None
         El constructor de la clase
     """
@@ -28,27 +28,25 @@ class Inmueble(ABC):
     contador_inmuebles = 0 # usado para asignar un identificador a cada
     # inmueble
 
-    def __init__(self, duenyo: 'Persona',
-                 habitaciones : list['Habitacion', ...],
-                 zona : 'ZonaGeografica') -> None:
+    def __init__(self, duenyo: 'Persona',habitaciones : list['Habitacion', ...],zona : 'ZonaGeografica') -> None:
         """
         Metodo constructor de la clase Inmueble
 
         Parametros
         ----------
-        nombre : str
+        nombre: str
             el nombre del inmueble
 
-        descripcion : str
+        descripcion: str
             una descripcion opcional de las caracteristicas del inmueble
 
-        habitaciones : list
+        habitaciones: list
             una lista con las habitaciones que forman parte del inmueble
 
-        precio : float
+        precio: float
             el precio de mercado (en euros €) del inmueble
 
-        zona : Zona
+        zona: Zona
             la zona geográfica a la que pertenece el inmueble
         """
         self.__id : int = type(self).contador_inmuebles
@@ -57,15 +55,24 @@ class Inmueble(ABC):
         self.__habitaciones = habitaciones
         self.__zona = zona
 
+    @abstractmethod
+    def tipo(self) -> str:
+        """
+        Método abstracto que define el tipo de inmueble.
+        """
+        pass
+
     def __len__(self):
         """
         Implementacion de __len__
 
         Devuelve
-        --------
+        -------
         : int
             entero que representa el n
         """
+
+        return len(self.__habitaciones)
 
     def __str__(self) -> str:
         """
@@ -78,7 +85,19 @@ class Inmueble(ABC):
             inmueble
         """
 
-        return (f'Inmueble: {self.__nombre}\nDescripcion: '
-                f'{self.__descripcion}\n'
-                f'Nº habitaciones: {len(self.__habitaciones)}')
+        return (f"Inmueble ID: {self.__id}\n"
+                f"Dueño: {self.__duenyo.nombre}\n"
+                f"Zona: {self.__zona.nombre}\n"
+                f'Nº habitaciones: {len(self)}')
 
+    def get_id(self):
+        return self.__id
+
+    def get_duenyo(self):
+        return self.__duenyo
+
+    def get_zona(self):
+        return self.__zona
+
+    def get_habitaciones(self):
+        return self.__habitaciones
