@@ -115,7 +115,7 @@ def registrar_usuario() -> tuple[Response, int]:
     return jsonify({'usuario': usuario.to_dict(),'access_token': access_token}), 201
 
 '''
-VINCULARLO CON LA BASE DE DATOS FUNCIONAL
+SQL
 '''
 @app.route('/inmuebles', methods=['GET'])
 def get_inmuebles() -> tuple[Response, int]:
@@ -131,7 +131,7 @@ def get_inmuebles() -> tuple[Response, int]:
     return jsonify(data['inmuebles']), 200
 
 '''
-VINCULARLO CON LA BASE DE DATOS FUNCIONAL
+SQL
 '''
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 def get_inmueble_id(id:int):
@@ -198,7 +198,7 @@ def anyadir_inmuebles(id:int):
         return jsonify({'error': f'Inmueble {id} ya existe'}), 409
 
 '''
-VINCULARLO CON LA BASE DE DATOS FUNCIONAL
+SQL
 '''
 @app.route('/inmuebles/<id>', methods=['PUT'])#Ruta para actualizar los inmuebles
 def actualizar_inmueble(id:int):
@@ -237,7 +237,7 @@ def actualizar_inmueble(id:int):
 
 
 '''
-VINCULARLO CON LA BASE DE DATOS FUNCIONAL
+SQL
 '''
 @app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
 def eliminar_inmueble(id:int):
