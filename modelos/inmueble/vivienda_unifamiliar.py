@@ -39,8 +39,8 @@ class ViviendaUnifamiliar(Inmueble):
         return "vivienda unifamiliar"
 
     @property
-    def descripcion(self) -> str:
-        return self.__descripcion
+    def descripcion(self):
+        return self._Inmueble__descripcion
 
     @property
     def precio(self):

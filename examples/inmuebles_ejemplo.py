@@ -26,7 +26,7 @@ habitaciones_casa = [
     Dormitorio(10.0, tiene_mesa_estudio=True)
 ]
 
-# Crear inmueble Piso
+
 piso1 = Piso(
     nombre="Piso Luminoso",
     descripcion="Piso céntrico con buenas vistas",
@@ -38,7 +38,6 @@ piso1 = Piso(
     ascensor=True
 )
 
-# Crear inmueble Vivienda Unifamiliar
 casa1 = ViviendaUnifamiliar(
     duenyo=vendedores[1],
     descripcion="Casa unifamiliar con jardín y piscina",
