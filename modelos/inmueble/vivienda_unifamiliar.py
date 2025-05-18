@@ -31,7 +31,7 @@ class ViviendaUnifamiliar(Inmueble):
         jardin : Optional[Jardin], optional
             Jardín de la vivienda, si tiene (por defecto None).
         """
-        super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
+        super().__init__(duenyo,habitaciones,zona,nombre,descripcion,precio)
         self.__tiene_piscina = tiene_piscina
         self.__jardin = jardin
 
@@ -43,8 +43,8 @@ class ViviendaUnifamiliar(Inmueble):
         return self.__descripcion
 
     @property
-    def precio(self) -> float:
-        return self.__precio
+    def precio(self):
+        return self._Inmueble__precio
 
     @property
     def tiene_piscina(self) -> bool:

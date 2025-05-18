@@ -1,6 +1,6 @@
 from modelos.usuario.vendedor import Vendedor
 
-# 🧑‍💼 Vendedores reales y variados
+#  Vendedores
 vendedor1 = Vendedor("lucia", "1234")
 vendedor2 = Vendedor("juan", "viviendas22")
 vendedor3 = Vendedor("marta", "pisoMODerno")

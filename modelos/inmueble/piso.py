@@ -51,7 +51,7 @@ class Piso(Inmueble):
         ValueError
             Si el número de planta es negativo.
         """
-        super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
+        super().__init__(duenyo,habitaciones,zona,nombre,descripcion,precio)
         self.__planta = planta
         self.__tiene_ascensor = ascensor
 

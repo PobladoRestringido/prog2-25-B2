@@ -1,62 +1,67 @@
 # inmuebles_ejemplo.py
-
-"""
-Creación inmuebles de ejemplo
-
-El propósito de este script es crear un set inicial de inmuebles con el único
-propósito de ser serializados, de modo que 'example.py' ofrezca una experiencia
-más interesante (y funcional)
-"""
+from modelos.habitacion.dormitorio import Dormitorio
+from modelos.habitacion.cocina import Cocina
+from modelos.habitacion.banyo import Banyo
+from modelos.habitacion.salon import Salon
 from modelos.inmueble.piso import Piso
 from modelos.inmueble.vivienda_unifamiliar import ViviendaUnifamiliar
-from vendedor_ejemplo import vendedor1, vendedor2, vendedor3
-from Zonas_ejemplo import zonas
-from habitaciones_ejemplo import habitaciones_piso1, habitaciones_piso2, habitaciones_casa1
 
+from examples.Zonas_ejemplo import zonas
+from examples.vendedor_ejemplo import vendedores
+
+# Crear habitaciones para piso
+habitaciones_piso = [
+    Dormitorio(12.0, tiene_cama=True, tiene_lampara=True),
+    Cocina(8.0, tiene_frigorifico=True, tiene_horno=True),
+    Banyo(5.0, tiene_ducha=True, tiene_lavabo=True),
+    Salon(20.0, tiene_televisor=True, tiene_sofa=True)
+]
+
+# Crear habitaciones para vivienda unifamiliar
+habitaciones_casa = [
+    Dormitorio(15.0, tiene_cama=True),
+    Cocina(10.0, tiene_frigorifico=True),
+    Banyo(7.0, tiene_banyera=True, tiene_lavabo=True),
+    Salon(25.0, tiene_sofa=True),
+    Dormitorio(10.0, tiene_mesa_estudio=True)
+]
+
+# Crear inmueble Piso
 piso1 = Piso(
-    nombre="Piso 1",
-    descripcion="Bonito piso céntrico",
-    habitaciones=habitaciones_piso1,
+    nombre="Piso Luminoso",
+    descripcion="Piso céntrico con buenas vistas",
+    habitaciones=habitaciones_piso,
     precio=180000,
-    zona=zona_centro_madrid,  
-    duenyo=vendedor1,
+    zona=zonas["centro_madrid"],
+    duenyo=vendedores[0],
     planta=3,
     ascensor=True
 )
 
-zonas["centro_madrid"].agregar_inmueble(piso1)
-
-# Crear Piso 2
-piso2 = Piso(
-    nombre="Piso Familiar en Zona Norte",
-    descripcion="Ideal para familias grandes, zona tranquila y bien conectada.",
-    precio=210000,
-    habitaciones=habitaciones_piso2,
-    zona=zonas["norte_madrid"],
-    duenyo=vendedor2,
-    planta=3,
-    ascensor=True
-)
-zonas["norte_madrid"].agregar_inmueble(piso2)
-
-# Crear Vivienda Unifamiliar
+# Crear inmueble Vivienda Unifamiliar
 casa1 = ViviendaUnifamiliar(
-    nombre="Chalet con Jardín y Piscina",
-    descripcion="Casa espaciosa con jardín privado y piscina.",
+    duenyo=vendedores[1],
+    descripcion="Casa unifamiliar con jardín y piscina",
     precio=350000,
-    habitaciones=habitaciones_casa1,
-    zona=zonas["rural_asturias"],
-    duenyo=vendedor3,
+    nombre="Casa Rural",
+    habitaciones=habitaciones_casa,
+    zona=zonas["norte_madrid"],
     tiene_piscina=True,
-    jardin="Jardín de 100m² con césped natural y árboles"
+    jardin=None
 )
-zonas["rural_asturias"].agregar_inmueble(casa1)
 
+# Añadir inmuebles a las zonas correspondientes
+zonas["centro_madrid"].agregar_inmueble(piso1)
+zonas["norte_madrid"].agregar_inmueble(casa1)
+
+# Lista de inmuebles para trabajar
 inmuebles = [piso1, casa1]
 
-if __name__ == "__main__":
-    for inmueble in inmuebles:
-        print(type(inmueble.zona))  # Debería mostrar <class 'modelos.zona_geografica.ZonaGeografica'>
-        print(inmueble.nombre, inmueble.zona.nombre)
-
+for i, inmueble in enumerate(inmuebles, 1):
+    print(f"Inmueble {i}: {inmueble.nombre} - Precio: {inmueble.precio} € - Zona: {inmueble.zona}")
+    print(f"Dueño: {inmueble.duenyo.nombre}")
+    print("Habitaciones:")
+    for hab in inmueble.habitaciones:
+        print(f" - {hab}")
+    print()
 

@@ -42,6 +42,22 @@ class Banyo(Habitacion):
         self.__tiene_vater = tiene_vater
         self.__tiene_lavabo = tiene_lavabo
 
+    @property
+    def tiene_ducha(self):
+        return self.__tiene_ducha
+
+    @property
+    def tiene_banyera(self):
+        return self.__tiene_banyera
+
+    @property
+    def tiene_vater(self):
+        return self.__tiene_vater
+
+    @property
+    def tiene_lavabo(self):
+        return self.__tiene_lavabo
+
     def __str__(self):
         extras = []
         if self.tiene_ducha:

@@ -46,6 +46,26 @@ class Cocina(Habitacion):
         self.__tiene_fregadero = tiene_fregadero
         self.__tiene_mesa = tiene_mesa
 
+    @property
+    def tiene_frigorifico(self):
+        return self.__tiene_frigorifico
+
+    @property
+    def tiene_horno(self):
+        return self.__tiene_horno
+
+    @property
+    def tiene_microondas(self):
+        return self.__tiene_microondas
+
+    @property
+    def tiene_fregadero(self):
+        return self.__tiene_fregadero
+
+    @property
+    def tiene_mesa(self):
+        return self.__tiene_mesa
+
     def __str__(self):
         extras = []
         if self.tiene_frigorifico:

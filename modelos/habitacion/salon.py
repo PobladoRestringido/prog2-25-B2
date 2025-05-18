@@ -38,6 +38,19 @@ class Salon(Habitacion):
         self.__tiene_sofa = tiene_sofa
         self.__tiene_mesa_recreativa = tiene_mesa_recreativa
 
+    @property
+    def tiene_televisor(self):
+        return self.__tiene_televisor
+
+    @property
+    def tiene_sofa(self):
+        return self.__tiene_sofa
+
+    @property
+    def tiene_mesa_recreativa(self):
+        return self.__tiene_mesa_recreativa
+
+
     def __str__(self):
         extras = []
         if self.tiene_televisor:

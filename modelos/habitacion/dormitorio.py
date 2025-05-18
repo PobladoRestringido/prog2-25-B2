@@ -34,6 +34,19 @@ class Dormitorio(Habitacion):
         self.__tiene_lampara = tiene_lampara
         self.__tiene_mesa_estudio = tiene_mesa_estudio
 
+
+    @property
+    def tiene_cama(self):
+        return self.__tiene_cama
+
+    @property
+    def tiene_lampara(self):
+        return self.__tiene_lampara
+
+    @property
+    def tiene_mesa_estudio(self):
+        return self.__tiene_mesa_estudio
+
     def __str__(self):
         extras = []
         if self.tiene_cama:
