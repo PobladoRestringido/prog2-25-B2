@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS Usuario (
         );
 
 CREATE TABLE IF NOT EXISTS Inmueble (
-    id INT(11) AUTO_INCREMENT,
+    id INT(11),
     zona VARCHAR(50),
     nombre_propietario VARCHAR(50),
     PRIMARY KEY (id),
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS InteresInmuebles (
 );
 
 CREATE TABLE IF NOT EXISTS Publicacion (
-    id INT(11) AUTO_INCREMENT,
+    id INT(11),
     precio_listado DECIMAL(12, 2),
     descripcion VARCHAR(500),
     fecha TIMESTAMP,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Publicacion (
 );
 
 CREATE TABLE IF NOT EXISTS Comentario (
-    id INT(11) AUTO_INCREMENT,
+    id INT(11),
     fecha TIMESTAMP,
     contenido VARCHAR(500),
     nombre_comprador VARCHAR(50),
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS SeOfertaEn (
 );
 
 CREATE TABLE IF NOT EXISTS Habitacion (
-    id INT(11) AUTO_INCREMENT,
+    id INT(11),
     id_inmueble INT(11),
     superficie DECIMAL(12, 2),
     PRIMARY KEY (id, id_inmueble),

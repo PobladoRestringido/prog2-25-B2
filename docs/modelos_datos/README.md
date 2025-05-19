@@ -21,6 +21,12 @@ miembros del grupo, así como su futuro mantenimiento.
   *draw.io*](https://app.diagrams.net/?src=about), una herramienta gratis de
   diseño integrada con github.
 
+* El fichero ``modelo_relacional.sql`` contiene el modelo relacional de la 
+  base de datos del proyecto. Está escrito directamente en formato ``.sql`` 
+  porque he leído que es una práctica común, y porque ello facilitará la futura
+  creación de la base de datos (símplemente hay que ejecutar ese código). 
+  Se ha creado a partir del modelo entidad-relación anterior.
+
 * El fichero `Z_entidad_relacion_sucio.jpg` contiene un esbozo a lápiz de un
   primer intento de crear un modelo Entidad Relación Extendido para el
   proyecto. Debido a la falta de espacio y de claridad del medio físico

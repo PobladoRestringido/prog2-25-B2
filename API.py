@@ -13,10 +13,13 @@ from examples.inmuebles_ejemplo import inmuebles
 from examples.vendedor_ejemplo import vendedores
 from examples.Zonas_ejemplo import zonas
 
-import random
-from flask import Flask, jsonify, request, Response
 from serializacion.pickling import cargar_data
+
+import random
+
+from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+import sqlite3
 
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
@@ -86,11 +89,11 @@ def registrar_usuario() -> tuple[Response, int]:
 
     Retorna:
         - JSON con la representación del usuario y HTTP 201 si el sign-up
-        fue correcto.
+          fue correcto.
         - JSON con un mensaje de error y HTTP 409 si el nombre de usuario
-        ya existe.
+          ya existe.
         - JSON con un mensaje de error y HTTP 400 si se pide crear un tipo
-        de usuario inexistente.
+          de usuario inexistente.
     """
     data = request.get_json()
     nombre = data.get('nombre')
@@ -101,11 +104,42 @@ def registrar_usuario() -> tuple[Response, int]:
     if not nombre or not contrasenya:
         return jsonify({'error': 'Faltan credenciales.'}), 400
 
-    # Verificar que el nombre de usuario no esté en uso.
-    for u in usuarios_registrados:
-        if u.nombre == nombre:
-            return (jsonify({'error': 'El nombre de usuario ya está en uso.'}),
-                    409)
+    # Conectar a la base de datos.
+    conn = sqlite3.connect('base_datos/base_datos.db')
+    cursor = conn.cursor()
+
+    # Verificar que el usuario no exista.
+    cursor.execute("SELECT nombre FROM Usuario WHERE nombre = ?", (nombre,))
+    if cursor.fetchone() is not None:
+        conn.close()
+        return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 409
+
+    # Insertar en la tabla Usuario.
+    try:
+        cursor.execute(
+            "INSERT INTO Usuario (nombre, contrasenya) VALUES (?, ?)",
+            (nombre, contrasenya)
+        )
+
+        # Insertar en la tabla correspondiente según el rol.
+        if rol == "comprador":
+            cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)", (nombre,))
+        elif rol == "vendedor":
+            cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)", (nombre,))
+        elif rol == "administrador":
+            cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)", (nombre,))
+        else:
+            conn.close()
+            return jsonify({'error': f"Rol de usuario '{rol}' no válido."}), 400
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': 'Error al registrar el usuario',
+                        'detalle': str(e)}), 500
+
+    conn.close()
 
     if rol == "comprador":
         usuario = Comprador(nombre, contrasenya)
@@ -116,17 +150,14 @@ def registrar_usuario() -> tuple[Response, int]:
     else:
         return jsonify({'error': f"Rol de usuario '{rol}' no válido."}), 400
 
-    usuarios_registrados.append(usuario)
     access_token = create_access_token(
         identity=usuario.nombre,
         additional_claims={"rol": usuario.rol}
     )
 
-    return jsonify({'usuario': usuario.to_dict(),'access_token': access_token}), 201
+    return jsonify({'usuario': usuario.to_dict(), 'access_token': access_token}), 201
 
-'''
-SQL
-'''
+
 @app.route('/inmuebles', methods=['GET'])
 def get_inmuebles() -> tuple[Response, int]:
     """
