@@ -80,75 +80,80 @@ def iniciar_sesion() -> tuple[Response, int]:
 @app.route('/register', methods=['POST'])
 def registrar_usuario() -> tuple[Response, int]:
     """
-    Registra un nuevo usuario si el nombre no está en uso.
+    Método que registra un nuevo usuario si el nombre no está ya en uso.
 
-    Parámetros esperados en el JSON:
-        - nombre: nombre de usuario único
-        - contrasenya: clave secreta
-        - tipo: tipo de usuario (comprador, vendedor, administrador)
+    Parámetros
+    ----------
+    nombre : str
+        nombre de usuario único.
+    contrasenya : str
+        contraseña encriptada.
+    tipo : str
+        tipo de usuario (comprador, vendedor, administrador).
 
-    Retorna:
-        - JSON con la representación del usuario y HTTP 201 si el sign-up
-          fue correcto.
-        - JSON con un mensaje de error y HTTP 409 si el nombre de usuario
-          ya existe.
-        - JSON con un mensaje de error y HTTP 400 si se pide crear un tipo
-          de usuario inexistente.
+    Retorna
+    -------
+    tuple[Response, int]
+        JSON con la representación del usuario y el código HTTP
+        correspondiente.
     """
+
+    # primero extraemos la data del json.
     data = request.get_json()
     nombre = data.get('nombre')
     contrasenya = data.get('contrasenya')
-    rol = data.get('rol')
+    tipo_usuario = data.get('tipo')
 
-    # Validación básica de entrada.
-    if not nombre or not contrasenya:
+    # a continuación validamos la entrada.
+    if not nombre or not contrasenya or not tipo_usuario:
         return jsonify({'error': 'Faltan credenciales.'}), 400
+
+    if tipo_usuario not in ('comprador', 'vendedor', 'administrador'):
+        return jsonify({'error': 'Tipo usuario no válido.'}), 400
 
     # Conectar a la base de datos.
     conn = sqlite3.connect('base_datos/base_datos.db')
     cursor = conn.cursor()
 
-    # Verificar que el usuario no exista.
-    cursor.execute("SELECT nombre FROM Usuario WHERE nombre = ?", (nombre,))
+    # Verificar que el usuario no exista ya.
+    cursor.execute("SELECT nombre FROM Usuario WHERE nombre = ?",(nombre,))
     if cursor.fetchone() is not None:
         conn.close()
-        return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 409
+        return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 400
 
-    # Insertar en la tabla Usuario.
+    # Llegados a este punto las creedenciales son válidas, por lo que
+    # insertamos al nuevo usuario en la DB.
     try:
         cursor.execute(
             "INSERT INTO Usuario (nombre, contrasenya) VALUES (?, ?)",
             (nombre, contrasenya)
         )
 
-        # Insertar en la tabla correspondiente según el rol.
-        if rol == "comprador":
-            cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)", (nombre,))
-        elif rol == "vendedor":
-            cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)", (nombre,))
-        elif rol == "administrador":
-            cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)", (nombre,))
-        else:
-            conn.close()
-            return jsonify({'error': f"Rol de usuario '{rol}' no válido."}), 400
-
+        # Insertar en la tabla correspondiente según el ``tipo_usuario``.
+        if tipo_usuario == "comprador":
+            cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)",
+                           (nombre,))
+        elif tipo_usuario == "vendedor":
+            cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)",
+                           (nombre,))
+        elif tipo_usuario == "administrador":
+            cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)",
+                           (nombre,))
         conn.commit()
+
     except Exception as e:
         conn.rollback()
         conn.close()
-        return jsonify({'error': 'Error al registrar el usuario',
-                        'detalle': str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
     conn.close()
 
-    if rol == "comprador":
+    if tipo_usuario == "comprador":
         usuario = Comprador(nombre, contrasenya)
-    elif rol == "vendedor":
+    elif tipo_usuario == "vendedor":
         usuario = Vendedor(nombre, contrasenya)
-    elif rol == "administrador":
+    elif tipo_usuario == "administrador":
         usuario = Administrador(nombre, contrasenya)
-    else:
-        return jsonify({'error': f"Rol de usuario '{rol}' no válido."}), 400
 
     access_token = create_access_token(
         identity=usuario.nombre,
