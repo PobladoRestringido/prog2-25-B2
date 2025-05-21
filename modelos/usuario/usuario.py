@@ -1,5 +1,6 @@
 # usuario.py
 import hashlib
+from modelos.excepciones import UsuarioNombreInvalidoError, ContrasenyaInvalidaError
 
 class Usuario:
     """
@@ -48,6 +49,10 @@ class Usuario:
         contrasenya : str
             Contraseña en texto plano que se encriptará.
         """
+        if not nombre or not nombre.strip():
+            raise UsuarioNombreInvalidoError("El nombre de usuario no puede estar vacío", field="nombre", value=nombre)
+        if not contrasenya:
+            raise ContrasenyaInvalidaError("La contraseña no puede estar vacía", field="contrasenya", value=contrasenya)
         self.__nombre = nombre
         self.__contrasenya = self._encriptar_contrasenya(contrasenya)
         self.__rol= rol

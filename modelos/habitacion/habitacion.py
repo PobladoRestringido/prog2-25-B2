@@ -1,4 +1,5 @@
 # habitacion.py
+from modelos.excepciones import SuperficieInvalidaError
 
 class Habitacion:
     """
@@ -45,6 +46,9 @@ class Habitacion:
             Superficie de la habitación en metros cuadrados.
         """
         self.__id = self.__class__.contador_habitaciones
+
+        if superficie is None or superficie <= 0:
+            raise SuperficieInvalidaError("La superficie debe ser mayor que 0", field="superficie", value=superficie)
         self.__superficie = superficie
 
         self.__class__.contador_habitaciones += 1
@@ -60,3 +64,11 @@ class Habitacion:
             "id": self.__id,
             "superficie": self.__superficie
         }
+
+    @property
+    def id(self) -> int:
+        return self.__id
+
+    @@property
+    def superficie(self) -> float:
+        return self.__superficie

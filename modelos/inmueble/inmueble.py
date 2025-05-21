@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from modelos.excepciones import PrecioInvalidoError
 
 class Inmueble(ABC):
     """
@@ -49,6 +50,8 @@ class Inmueble(ABC):
         zona: Zona
             la zona geográfica a la que pertenece el inmueble
         """
+        if precio is None or precio <= 0:
+            raise PrecioInvalidoError("El precio debe ser un número positivo", field="precio", value=precio)
         self.__id : int = type(self).contador_inmuebles
         type(self).contador_inmuebles+=1
         self.__duenyo = duenyo
