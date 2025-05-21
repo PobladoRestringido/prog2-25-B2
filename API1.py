@@ -82,6 +82,7 @@ def ver_inmuebles():
             "precio": inmueble.precio,
             "zona": inmueble.zona.nombre,
             "duenyo": inmueble.duenyo.nombre,
+            "direccion": inmueble.direccion,
             "habitaciones": [str(h) for h in inmueble.habitaciones]  # asumiendo que son objetos
         }
         resultado.append(inmueble_info)
@@ -112,6 +113,7 @@ def ver_inmueble_por_id(id):
         "precio": inmueble.precio,
         "zona": inmueble.zona.nombre,
         "duenyo": inmueble.duenyo.nombre,
+        "direccion": inmueble.direccion,
         "habitaciones": [str(h) for h in inmueble.habitaciones]
     }
     return jsonify(resultado), 200
@@ -232,7 +234,17 @@ def anyadir_inmuebles():
     if tipo == 'piso':
         planta = datos.get('planta')
         ascensor = datos.get('ascensor', False)
-        inmueble = Piso(datos['nombre'], habitaciones_obj, zona, datos['descripcion'], datos['precio'], duenyo, planta, ascensor)
+        inmueble = Piso(
+            datos['nombre'],
+            habitaciones_obj,
+            zona,
+            datos['descripcion'],
+            datos['precio'],
+            duenyo,
+            datos.get('direccion', ''),  # Usa datos['direccion'] si existe, si no, cadena vacía
+            planta,
+            ascensor,
+        )
     elif tipo == 'vivienda_unifamiliar':
         tiene_piscina = datos.get('tiene_piscina', False)
         jardin = datos.get('jardin', None)

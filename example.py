@@ -1,4 +1,6 @@
 import requests
+import webbrowser
+import urllib.parse
 
 BASE_URL = "http://127.0.0.1:5000"
 token = None
@@ -42,7 +44,7 @@ def ver_inmuebles():
     if resp.status_code == 200:
         inmuebles = resp.json()
         for i, inmueble in enumerate(inmuebles, 1):
-            print(f"{i}. {inmueble['nombre']} - {inmueble['precio']}€ - Zona: {inmueble['zona']} - Dueño: {inmueble['duenyo']}")
+            print(f"{i}. {inmueble['nombre']} - {inmueble['precio']}€ - Zona: {inmueble['zona']} - Dueño: {inmueble['duenyo']} - Dirección: {inmueble['direccion']}")
     else:
         print("Error al obtener inmuebles:", resp.text)
 
@@ -59,6 +61,14 @@ def ver_inmueble_por_id():
         print("Detalles inmueble:")
         for k, v in inmueble.items():
             print(f"  {k}: {v}")
+        
+        direccion = inmueble.get("direccion") or inmueble.get("zona")
+        if direccion:
+            if input("\n¿Abrir en Google Maps? (s/n): ").strip().lower() == 's':
+                query = urllib.parse.quote(direccion)
+                url = f"https://www.google.com/maps/search/?api=1&query={query}"
+                webbrowser.open(url)
+
     else:
         print("Error:", resp.text)
 

@@ -86,6 +86,7 @@ piso1 = Piso(
     precio=180000,
     zona=zonas["centro_madrid"],
     duenyo=vendedores[0],
+    direccion="Calle Mayor, 1",
     planta=3,
     ascensor=True
 )
@@ -96,6 +97,7 @@ piso2 = Piso(
     precio=210000,
     zona=zonas["sur_madrid"],
     duenyo=vendedores[2],
+    direccion="Avenida de la Paz, 45",
     planta=5,
     ascensor=False
 )
@@ -106,6 +108,7 @@ piso3 = Piso(
     precio=165000,
     zona=zonas["casco_toledo"],
     duenyo=vendedores[4],
+    direccion="Calle Toledo, 10",
     planta=2,
     ascensor=True
 )
@@ -116,6 +119,7 @@ piso4 = Piso(
     precio=195000,
     zona=zonas["rural_asturias"],
     duenyo=vendedores[1],
+    direccion="Calle del Río, 20",
     planta=4,
     ascensor=True
 )
@@ -127,6 +131,7 @@ piso5 = Piso(
     precio=145000,
     zona=zonas["sur_madrid"],
     duenyo=vendedores[3],
+    direccion="Calle de la Libertad, 30",
     planta=1,
     ascensor=False
 )
@@ -139,6 +144,7 @@ casa1 = ViviendaUnifamiliar(
     nombre="Casa Rural",
     habitaciones=habitaciones_casa1,
     zona=zonas["norte_madrid"],
+    direccion="Calle del Bosque, 5",
     tiene_piscina=True,
     jardin=None
 )
@@ -149,6 +155,7 @@ casa2 = ViviendaUnifamiliar(
     nombre="Chalet Tranquilo",
     habitaciones=habitaciones_casa2,
     zona=zonas["residencial_sevilla"],
+    direccion="Calle de la Paz, 15",
     tiene_piscina=False,
     jardin="Pequeño jardín delantero"
 )
@@ -159,6 +166,7 @@ casa3 = ViviendaUnifamiliar(
     nombre="Casa Familiar",
     habitaciones=habitaciones_casa3,
     zona=zonas["norte_madrid"],
+    direccion="Calle del Sol, 25",
     tiene_piscina=True,
     jardin="Gran patio con árboles frutales"
 )
@@ -169,6 +177,7 @@ casa4 = ViviendaUnifamiliar(
     nombre="Casa Moderna",
     habitaciones=habitaciones_casa4,
     zona=zonas["centro_madrid"],
+    direccion="Calle de la Libertad, 12",
     tiene_piscina=False,
     jardin="Terraza amplia con vistas"
 )
@@ -180,6 +189,7 @@ casa5 = ViviendaUnifamiliar(
     nombre="Casa Rústica",
     habitaciones=habitaciones_casa5,
     zona=zonas["rural_asturias"],
+    direccion="Calle del Campo, 8",
     tiene_piscina=True,
     jardin="Jardín con vegetación autóctona"
 )

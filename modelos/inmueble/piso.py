@@ -25,7 +25,7 @@ class Piso(Inmueble):
         existencia de ascensor
     """
 
-    def __init__(self, nombre : str, habitaciones : list['Habitacion'],zona : 'ZonaGeográfica',descripcion : str, precio : float, duenyo : 'Persona', planta : int, ascensor : bool = False) -> None:
+    def __init__(self, nombre : str, habitaciones : list['Habitacion'],zona : 'ZonaGeográfica',descripcion : str, precio : float, duenyo : 'Persona', direccion: str, planta : int, ascensor : bool = False) -> None:
         """
         Parámetros
         ----------
@@ -41,6 +41,8 @@ class Piso(Inmueble):
             Zona geográfica en la que se encuentra el piso.
         duenyo : Persona
             Persona propietaria del piso.
+        direccion : str
+            Dirección del inmueble para buscar en Google Maps.
         planta : int
             Número de planta donde se encuentra el piso. Debe ser 0 o mayor.
         ascensor : bool, opcional
@@ -54,6 +56,7 @@ class Piso(Inmueble):
         super().__init__(duenyo,habitaciones,zona,nombre,descripcion,precio)
         self.__planta = planta
         self.__tiene_ascensor = ascensor
+        self.direccion = direccion
 
         if planta < 0:
             raise ValueError("La planta no puede ser negativa")
@@ -97,6 +100,7 @@ class Piso(Inmueble):
             "zona": self.zona.nombre,
             "pais": self.zona.pais,
             "duenyo": self.duenyo.nombre,
+            "direccion": self.direccion,
             "planta": self.planta,
             "ascensor": self.tiene_ascensor,
             "habitaciones": [str(hab) for hab in self.habitaciones]

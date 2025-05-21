@@ -28,7 +28,7 @@ class Inmueble(ABC):
     contador_inmuebles = 0 # usado para asignar un identificador a cada
     # inmueble
 
-    def __init__(self, duenyo: 'Persona',habitaciones : list['Habitacion', ...],zona :'ZonaGeografica',nombre:str,descripcion:str,precio:float) -> None:
+    def __init__(self, duenyo: 'Persona',habitaciones : list['Habitacion', ...],zona :'ZonaGeografica', nombre:str, descripcion:str, precio:float) -> None:
         """
         Metodo constructor de la clase Inmueble
 
@@ -48,6 +48,8 @@ class Inmueble(ABC):
 
         zona: Zona
             la zona geográfica a la que pertenece el inmueble
+        direccion: str
+            la direccion del inmueble para buscar en Google Maps
         """
         self.__id : int = type(self).contador_inmuebles
         type(self).contador_inmuebles+=1
