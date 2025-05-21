@@ -231,37 +231,51 @@ def get_inmuebles() -> tuple[Response, int]:
 
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 @jwt_required()
-def get_inmueble_id(id:int):
+def get_inmueble_id(id: int) -> tuple[Response, int]:
     """
-    Función que nos muestra un inmueble por su ID
+    Recupera los detalles de un inmueble específico por su ID desde la base de datos.
 
-    Parámetros
-    ------------
-    -id: int
-        ID del inmueble que queramos consultar
+    Solo los usuarios con rol de 'administrador' pueden acceder a esta ruta.
+    Si el inmueble no se encuentra, se devuelve un error 404.
+    En caso de error de conexión u otro fallo inesperado, se devuelve un error 500.
 
-    Devuélve
-    ------------
-    -Diccionario con los detalles del inmueble si existe, si no existe nos salta un error.
+    Parameters
+    ----------
+    id: int
+        Identificador único del inmueble a consultar.
 
-    -código de estado: 200 si la solicitud funciona sin ningún problema
-                       404 si la solicitud tiene algún problema
+    Returns
+    -------
+    tuple[Response, int]
+        - Si el usuario tiene permisos y el inmueble existe:
+            JSON con los datos del inmueble y código de estado HTTP 200.
+        - Si el usuario no tiene permisos:
+            JSON con mensaje de error y código HTTP 403.
+        - Si el inmueble no existe:
+            JSON con mensaje de error y código HTTP 404.
+        - Si ocurre un error interno:
+            JSON con mensaje de error y código HTTP 500.
     """
     rol = get_jwt().get('rol')
     if rol != 'administrador':
         return jsonify({"error": "Acceso denegado, solo administradores pueden acceder"}), 403
 
-    inmueble = None
-    for i in inmuebles:
-        if i.get_id() == id:
-            inmueble = i
-            break
+    try:
+        with sqlite3.connect('base_datos/base_datos.db') as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-    if not inmueble:
-        return jsonify({"error": "Inmueble no encontrado"}), 404
+            cursor.execute("SELECT * FROM Inmueble WHERE id = ?", (id,))
+            row = cursor.fetchone()
 
-    return jsonify(inmueble.to_dict()), 200
+            if row is None:
+                return jsonify({"error": "Inmueble no encontrado"}), 404
 
+            inmueble = dict(row)
+            return jsonify(inmueble), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 '''
 SQL
