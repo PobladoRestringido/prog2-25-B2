@@ -506,51 +506,70 @@ def escribir_comentario(id):
     return jsonify({"message": "Comentario agregado con éxito!"}), 200
 
 @app.route('/inmueble/<id>/comentarios',methods=['GET'])
-def mostrar_comentarios(id:int):
+def mostrar_comentarios(id: int) -> tuple[Response, int]:
     """
-       Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
+    Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
 
-       Según el tipo de inmueble (determinado por la presencia de ciertas características como jardín o piscina),
-       se seleccionan 5 comentarios aleatorios de la lista correspondiente.
+    Según el tipo de inmueble (determinado por la presencia de jardín o piscina),
+    se seleccionan 5 comentarios aleatorios de la lista correspondiente.
 
-       Parámetros
-       ----------
-       id : int
-           El identificador único del inmueble.
+    Parámetros
+    ----------
+    id: int
+        El identificador único del inmueble.
 
-       Excepciones
-       ------------
-       Si el inmueble con el ID proporcionado no existe, se genera una respuesta de error con un código 404.
+    Excepciones
+    ------------
+    Si el inmueble con el ID proporcionado no existe, se genera una respuesta de error con un código 404.
+    Si ocurre un error con la base de datos, se genera un error 500.
 
-       Devuelve
-       --------
-       tuple
-           Una tupla que contiene:
-           - un diccionario con los detalles del inmueble, incluyendo su tipo y los comentarios aleatorios seleccionados.
-           - un código de estado HTTP (200 si todo está correcto, 404 si no se encuentra el inmueble).
+    Devuelve
+    --------
+    tuple
+        Una tupla que contiene:
+        - un diccionario con los detalles del inmueble, incluyendo su tipo y los comentarios aleatorios seleccionados.
+        - un código de estado HTTP (200 si todo está correcto, 404 si no se encuentra el inmueble, 500 en caso de error).
+    """
+    try:
+        with sqlite3.connect('base_datos/base_datos.db') as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-       """
-    inmueble = inmuebles.get(id)
+            cursor.execute("SELECT * FROM inmuebles WHERE id = ?", (id,))
+            inmueble = cursor.fetchone()
 
-    if not inmueble:
-        return jsonify({"error": "Inmueble no encontrado"}), 404
+            if not inmueble:
+                return jsonify({"error": "Inmueble no encontrado."}), 404
 
-    if 'jardin' in inmueble or 'tiene_piscina' in inmueble:
-        tipo = 'casa'
-        comentarios = random.sample(comentarios_casas, 5)
-    else:
-        tipo = 'piso'
-        comentarios = random.sample(comentarios_pisos, 5)
+            tipo = 'casa' if inmueble['jardin'] or inmueble['tiene_piscina'] else 'piso'
 
-    inmueble = {'id': id}
-    for clave, valor in inmueble.items():
-        inmueble[clave] = valor
 
-    inmueble['tipo'] = tipo
-    inmueble['comentarios'] = comentarios
-    inmueble['comentarios_usuario']=comentarios_usuario
+            cursor.execute(
+                "SELECT texto FROM comentarios WHERE tipo = ? ORDER BY RANDOM() LIMIT 5",
+                (tipo,)
+            )
+            comentarios = [row['texto'] for row in cursor.fetchall()]
 
-    return jsonify(inmueble), 200
+            cursor.execute(
+                "SELECT texto FROM comentarios_usuario WHERE inmueble_id = ?",
+                (id,)
+            )
+            comentarios_usuario = [row['texto'] for row in cursor.fetchall()]
+
+            respuesta = {
+                "id": inmueble['id'],
+                "tipo": tipo,
+                "comentarios": comentarios,
+                "comentarios_usuario": comentarios_usuario
+            }
+
+            return jsonify(respuesta), 200
+
+    except sqlite3.Error as err:
+        return jsonify({
+            "error": "Error al acceder a la base de datos.",
+            "message": str(err)
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
