@@ -99,7 +99,7 @@ def ver_inmueble_por_id(id):
     rol = claims.get('rol')
 
     if rol != 'administrador':
-        return jsonify({"error": "No tienes permiso para ver este inmueble"}), 403
+        return jsonify({"error": "No tienes permiso para ver este inmueble(Admin)"}), 403
 
     inmueble = next((i for i in inmuebles if i.get_id() == id), None)
 
