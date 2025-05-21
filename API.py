@@ -44,15 +44,17 @@ def iniciar_sesion() -> tuple[Response, int]:
     """
     Verifica las credenciales de un usuario para iniciar sesión.
 
-    Parámetros (esperados en formato JSON):
+    Parámetros
+    ----------
     - nombre: str
         Nombre de usuario.
     - contrasenya: str
         Clave secreta del usuario.
 
-    Retorna:
+    Retorna
+    -------
     - JSON con la representación del usuario y HTTP 200 si el log-in es
-    correcto.
+      correcto.
     - JSON con un mensaje de error y HTTP 401 si el log-in falla.
     - JSON con un mensaje de error y HTTP 400 si faltan las credenciales.
     """
@@ -64,18 +66,55 @@ def iniciar_sesion() -> tuple[Response, int]:
     if not nombre or not contrasenya:
         return jsonify({"error": "Faltan credenciales."}), 400
 
-    for usuario in usuarios_registrados:
-        if (usuario.nombre == nombre and
-                usuario.verificar_contrasenya(contrasenya)):
-            access_token = create_access_token(
-                identity=usuario.nombre,
-                additional_claims={"rol": usuario.rol}
-            )
-            return jsonify({"access_token": access_token}), 200
+    # Intentamos conectarnos a la base de datos.
+    try:
+        with sqlite3.connect('base_datos/base_datos.db') as conn:
+            conn.row_factory = sqlite3.Row  # Se extraen las filas como diccionarios.
+            cursor = conn.cursor()
 
-    return (jsonify({"error": "Nombre de usuario o contraseña incorrectos."}),
-            401)
+            # Ejecutamos la consulta dentro de un bloque try/except
+            try:
+                cursor.execute("""
+                    SELECT u.nombre, u.contrasenya,
+                           CASE
+                               WHEN c.nombre IS NOT NULL THEN 'Comprador'
+                               WHEN v.nombre IS NOT NULL THEN 'Vendedor'
+                               WHEN a.nombre IS NOT NULL THEN 'Administrador'
+                               ELSE 'Sin rol'
+                           END AS rol
+                    FROM Usuario u
+                    LEFT JOIN Comprador c ON u.nombre = c.nombre
+                    LEFT JOIN Vendedor v ON u.nombre = v.nombre
+                    LEFT JOIN Administrador a ON u.nombre = a.nombre
+                    WHERE u.nombre = ?
+                """, (nombre,))
+            except sqlite3.Error as exec_err:
+                return jsonify({
+                    "error": "Error al ejecutar la consulta en la base de datos.",
+                    "message": str(exec_err)
+                }), 500
 
+            db_row = cursor.fetchone()
+
+    except sqlite3.Error as conn_err:
+        return jsonify({
+            "error": "Error al conectar con la base de datos.",
+            "message": str(conn_err)
+        }), 500
+
+    # Comprobamos que el usuario existe.
+    if db_row is None:
+        return jsonify({'error': 'El nombre de usuario no existe.'}), 400
+
+    # Comprobamos que la contraseña es correcta.
+    elif db_row['contrasenya'] != contrasenya:
+        return jsonify({'error': 'La contraseña proporcionada es incorrecta.'}), 400
+
+    # Si las credenciales son correctas, devolvemos el token de acceso.
+    else:
+        access_token = create_access_token(identity=nombre,
+                                           additional_claims={"rol": db_row['rol']})
+        return jsonify({"access_token": access_token}), 200
 
 @app.route('/register', methods=['POST'])
 def registrar_usuario() -> tuple[Response, int]:
@@ -88,7 +127,7 @@ def registrar_usuario() -> tuple[Response, int]:
         nombre de usuario único.
     contrasenya : str
         contraseña encriptada.
-    tipo : str
+    rol : str
         tipo de usuario (comprador, vendedor, administrador).
 
     Retorna
@@ -112,47 +151,44 @@ def registrar_usuario() -> tuple[Response, int]:
         return jsonify({'error': 'Tipo usuario no válido.'}), 400
 
     # Conectar a la base de datos.
-    conn = sqlite3.connect('base_datos/base_datos.db')
-    cursor = conn.cursor()
+    with sqlite3.connect('base_datos/base_datos.db') as conn:
+        cursor = conn.cursor()
 
-    # Verificar que el usuario no exista ya.
-    cursor.execute("SELECT nombre FROM Usuario WHERE nombre = ?",(nombre,))
-    if cursor.fetchone() is not None:
-        conn.close()
-        return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 400
+        # Verificar que el usuario no exista ya.
+        cursor.execute("SELECT nombre FROM Usuario WHERE nombre = ?",(nombre,))
+        if cursor.fetchone() is not None:
+            return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 400
 
-    # Llegados a este punto las creedenciales son válidas, por lo que
-    # insertamos al nuevo usuario en la DB.
-    try:
-        cursor.execute(
-            "INSERT INTO Usuario (nombre, contrasenya) VALUES (?, ?)",
-            (nombre, contrasenya)
-        )
+        # Llegados a este punto las creedenciales son válidas, por lo que
+        # insertamos al nuevo usuario en la DB.
+        try:
+            cursor.execute(
+                "INSERT INTO Usuario (nombre, contrasenya) VALUES (?, ?)",
+                (nombre, contrasenya)
+            )
 
-        # Insertar en la tabla correspondiente según el ``rol``.
-        if rol == "comprador":
-            cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)",
-                           (nombre,))
-        elif rol == "vendedor":
-            cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)",
-                           (nombre,))
-        elif rol == "administrador":
-            cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)",
-                           (nombre,))
-        conn.commit()
+            # Insertar en la tabla correspondiente según el ``rol``.
+            if rol == "comprador":
+                cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)",
+                               (nombre,))
+            elif rol == "vendedor":
+                cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)",
+                               (nombre,))
+            elif rol == "administrador":
+                cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)",
+                               (nombre,))
+            conn.commit()
 
-    except Exception as e:
-        conn.rollback()
-        conn.close()
-        return jsonify({'error': str(e)}), 500
-
-    conn.close()
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return jsonify({'error': str(e)}), 500
 
     # Finalmente, creamos y devolvemos la representación json del usuario
     # creado.
     usuario = Comprador(nombre, contrasenya) if (rol ==
                                                  'comprador') else (
-        Vendedor(nombre, contrasenya))  if rol == 'vendedor' else (
+        Vendedor(nombre, contrasenya)) if rol == 'vendedor' else (
         Administrador(nombre, contrasenya))
 
     access_token = create_access_token(
@@ -171,19 +207,21 @@ def get_inmuebles() -> tuple[Response, int]:
     Returna
     -------
     tuple[Response, int]
-        JSON con la lista de inmuebles y HTTP 200 si la operación fue
-        correcta. Si hubo algún error durante la conexión a la base de
+        JSON con la lista de inmuebles (como diccionarios) y HTTP 200 si la
+        operación fue correcta.
+        Si hubo algún error durante la conexión a la base de
         datos, devuelve HTTP 500.
     """
     try:
         with sqlite3.connect('base_datos/base_datos.db') as conn:
-            # Establecer el row_factory permite convertir las filas en diccionarios
-            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
+
+            conn.row_factory = sqlite3.Row # esta línea hace que las filas
+            # de la base de datos se extraigan como diccionarios. Por
+            # defecto serían tuplas.
+
             # Extraemos los inmuebles de la base de datos
-            inmuebles = cursor.execute("SELECT * FROM Inmueble").fetchall()
-            # Convertimos cada fila a un dict
-            inmuebles_list = [inmueble.to_dict() for inmueble in inmuebles]
+            inmuebles_list = cursor.execute("SELECT * FROM Inmueble").fetchall()
 
         return jsonify(inmuebles_list), 200
 
