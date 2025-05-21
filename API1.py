@@ -19,7 +19,6 @@ from examples.Zonas_ejemplo import zonas
 
 import random
 
-
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 
@@ -42,10 +41,9 @@ def casa():
     return 'Bienvenido a la API de inmuebles'
 
 
-import json
-import os
 
 
+<<<<<<< HEAD
 ARCHIVO_USUARIOS = "usuarios.json"
 
 
@@ -172,6 +170,8 @@ El login usa los usuarios cargados del archivo.
 
 """
 
+=======
+>>>>>>> 5ca6dcf17e947f79260e0931f521745fc8ceca97
 
 
 
