@@ -13,17 +13,14 @@ from examples.inmuebles_ejemplo import inmuebles
 from examples.vendedor_ejemplo import vendedores
 from examples.Zonas_ejemplo import zonas
 
-from serializacion.pickling import cargar_data
+
 
 import random
-from datetime import datetime
-# para guardar la fecha de creación de Publicaciones y Comentarios.
+
 
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
-import sqlite3
-from openai import OpenAI
-import time
+
 
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
@@ -50,6 +47,7 @@ def casa():
 
 
 #--------------------------------------------------de aqui para abajo escribire mis apis--------------
+
 
 
 @app.route('/inmuebles', methods=['GET'])
@@ -183,6 +181,91 @@ def eliminar_inmueble(id):
     inmuebles.remove(inmueble)
     return jsonify({"mensaje": f"Inmueble {id} eliminado correctamente"}), 200
 
+@app.route('/inmuebles/<int:id>', methods=['POST'])
+@jwt_required()
+def anadir_inmueble(id):
+    rol = get_jwt().get('rol')
+    if rol != 'administrador' and rol != 'vendedor':
+        return jsonify({"error": "No tienes permiso para añadir inmuebles"}), 403
+
+    datos = request.get_json()
+
+    # Comprobar tipo de inmueble
+    if 'tipo' not in datos:
+        return jsonify({'error': 'Falta el campo tipo (piso o vivienda_unifamiliar)'}), 400
+    tipo = datos['tipo']
+
+    # Comprobar campos básicos uno por uno
+    if 'nombre' not in datos or 'descripcion' not in datos or 'habitaciones' not in datos or \
+       'precio' not in datos or 'zona' not in datos or 'duenyo' not in datos:
+        return jsonify({'error': 'Faltan campos básicos'}), 400
+
+    # Buscar la zona
+    nombre_zona = datos['zona']
+    if nombre_zona in zonas:
+        zona = zonas[nombre_zona]
+    else:
+        return jsonify({'error': 'Zona no encontrada'}), 400
+
+    # Buscar el dueño
+    duenyo = None
+    for vendedor in vendedores:
+        if vendedor.nombre == datos['duenyo']:
+            duenyo = vendedor
+            break
+    if duenyo is None:
+        return jsonify({'error': 'Dueño no encontrado'}), 400
+
+    # Crear lista de habitaciones
+    habitaciones_obj = []
+    for hab in datos['habitaciones']:
+        tipo_hab = hab['tipo']
+        superficie = hab['superficie']
+
+        if tipo_hab == 'dormitorio':
+            habitaciones_obj.append(Dormitorio(superficie, hab.get('tiene_cama', False),
+                                               hab.get('tiene_lampara', False),
+                                               hab.get('tiene_mesa_estudio', False)))
+        elif tipo_hab == 'cocina':
+            habitaciones_obj.append(Cocina(superficie, hab.get('tiene_frigorifico', False),
+                                           hab.get('tiene_horno', False),
+                                           hab.get('tiene_microondas', False),
+                                           hab.get('tiene_fregadero', False),
+                                           hab.get('tiene_mesa', False)))
+        elif tipo_hab == 'banyo':
+            habitaciones_obj.append(Banyo(superficie, hab.get('tiene_ducha', False),
+                                          hab.get('tiene_banyera', False),
+                                          hab.get('tiene_vater', False),
+                                          hab.get('tiene_lavabo', True)))
+        elif tipo_hab == 'salon':
+            habitaciones_obj.append(Salon(superficie, hab.get('tiene_televisor', False),
+                                          hab.get('tiene_sofa', False),
+                                          hab.get('tiene_mesa_recreativa', False)))
+        else:
+            return jsonify({'error': 'Tipo de habitación no reconocido'}), 400
+
+    # Crear el inmueble
+    if tipo == 'piso':
+        planta = datos.get('planta')
+        ascensor = datos.get('ascensor', False)
+        inmueble = Piso(datos['nombre'], habitaciones_obj, zona, datos['descripcion'], datos['precio'],
+                        duenyo, planta, ascensor)
+    elif tipo == 'vivienda_unifamiliar':
+        piscina = datos.get('tiene_piscina', False)
+        jardin = datos.get('jardin')
+        inmueble = ViviendaUnifamiliar(duenyo, datos['descripcion'], datos['precio'], datos['nombre'],
+                                       habitaciones_obj, zona, piscina, jardin)
+    else:
+        return jsonify({'error': 'Tipo de inmueble no válido'}), 400
+
+    # Guardar el inmueble
+    inmuebles.append(inmueble)
+    zona.agregar_inmueble(inmueble)
+
+    return jsonify({
+        'mensaje': 'Inmueble añadido correctamente',
+        'inmueble': inmueble.to_dict()
+    }), 201
 @app.route('/inmueble/<int:id>/escribir', methods=['POST'])
 def escribir_comentario(id):
     """
