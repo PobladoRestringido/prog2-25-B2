@@ -197,12 +197,16 @@ def get_inmueble_id(id:int):
                        404 si la solicitud tiene algún problema
     """
     rol = get_jwt().get('rol')
-
     if rol != 'administrador':
         return jsonify({"error": "Acceso denegado, solo administradores pueden acceder"}), 403
 
-    inmueble = next((inm for inm in inmuebles if inm.get_id() == id), None)
-    if inmueble is None:
+    inmueble = None
+    for i in inmuebles:
+        if i.get_id() == id:
+            inmueble = i
+            break
+
+    if not inmueble:
         return jsonify({"error": "Inmueble no encontrado"}), 404
 
     return jsonify(inmueble.to_dict()), 200
