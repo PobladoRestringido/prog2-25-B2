@@ -572,5 +572,8 @@ def mostrar_comentarios(id: int) -> tuple[Response, int]:
             "message": str(err)
         }), 500
 
+'''
+Cuando se termine implemento mi api de descripciones mediante IA
+'''
 if __name__ == '__main__':
     app.run(debug=True)
