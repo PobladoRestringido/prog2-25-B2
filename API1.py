@@ -53,14 +53,52 @@ def casa():
 
 
 @app.route('/inmuebles', methods=['GET'])
-@jwt_required()
-def ver_todos_inmuebles():
+def ver_inmuebles():
     """
-    Devuelve todos los inmuebles disponibles.
-    Solo requiere autenticación JWT.
+    Devuelve información detallada de todos los inmuebles
     """
-    return jsonify([i.to_dict() for i in inmuebles]), 200
+    resultado = []
 
+    for i, inmueble in enumerate(inmuebles, 1):
+        inmueble_info = {
+            "numero": i,
+            "nombre": inmueble.nombre,
+            "precio": inmueble.precio,
+            "zona": inmueble.zona.nombre,
+            "duenyo": inmueble.duenyo.nombre,
+            "habitaciones": [str(h) for h in inmueble.habitaciones]  # asumiendo que son objetos
+        }
+        resultado.append(inmueble_info)
+
+    return jsonify(resultado), 200
+
+@app.route('/inmuebles/<int:id>', methods=['GET'])
+@jwt_required()
+def ver_inmueble_por_id(id):
+    """
+    Devuelve el inmueble con el ID especificado.
+    Solo accesible para administradores.
+    """
+    claims = get_jwt()
+    rol = claims.get('rol')
+
+    if rol != 'administrador':
+        return jsonify({"error": "No tienes permiso para ver este inmueble"}), 403
+
+    inmueble = next((i for i in inmuebles if i.get_id() == id), None)
+
+    if inmueble is None:
+        return jsonify({"error": f"Inmueble con ID {id} no encontrado"}), 404
+
+    resultado = {
+        "id": inmueble.get_id(),
+        "nombre": inmueble.nombre,
+        "precio": inmueble.precio,
+        "zona": inmueble.zona.nombre,
+        "duenyo": inmueble.duenyo.nombre,
+        "habitaciones": [str(h) for h in inmueble.habitaciones]
+    }
+    return jsonify(resultado), 200
 
 @app.route('/inmuebles/<int:id>', methods=['PUT'])
 @jwt_required()
