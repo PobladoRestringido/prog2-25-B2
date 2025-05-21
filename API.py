@@ -173,8 +173,8 @@ def anyadir_inmuebles(id:int):
     'habitaciones',
     'zona',
     'direccion',
-    'precio_de_venta',
-    'precio_de_alquiler/por mes'
+    'precio de venta',
+    'precio de alquiler/por mes'
     }
 
     if not necesario.issubset(datos.keys()):
