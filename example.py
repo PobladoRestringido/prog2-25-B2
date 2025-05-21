@@ -314,10 +314,6 @@ def anyadir_inmueble() -> str:
         return "Error: El campo 'precio de venta' debe ser un número válido."
 
     precio_alquiler: str = input("Introduce el precio de alquiler por mes: ")
-    try:
-        precio_alquiler_float = float(precio_alquiler)
-    except ValueError:
-        return "Error: El campo 'precio de alquiler' debe ser un número válido."
 
     data: dict = {
         'id': int(inmueble_id),
@@ -326,7 +322,7 @@ def anyadir_inmueble() -> str:
         'zona': zona,
         'direccion': direccion,
         'precio de venta': precio_venta_float,
-        'precio de alquiler/por mes': precio_alquiler_float
+        'precio de alquiler/por mes': precio_alquiler
     }
 
     response = requests.post(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
@@ -487,7 +483,7 @@ def main()-> None:
         elif opcion == 5:
             ver_comentarios_inmueble()
         elif opcion == 6:
-            print(escribir_comentario())  # Nueva opción
+            print(escribir_comentario())  
         elif opcion == 7:
             print(anyadir_inmueble())
         elif opcion == 8:
