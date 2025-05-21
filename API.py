@@ -20,7 +20,8 @@ import random
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 import sqlite3
-import openai
+from openai import OpenAI
+import time
 
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
@@ -576,6 +577,21 @@ def mostrar_comentarios(id: int) -> tuple[Response, int]:
 '''
 Cuando se termine implemento mi api de descripciones mediante IA
 '''
+
+def deepseek_generatecontent(tipo, habitaciones):
+    # Generar un número aleatorio de metros dentro de un rango razonable
+    dimensiones = random.randint(50, 150)  # Puedes ajustar el rango según tus necesidades
+
+    # Generar el mensaje para Deepseek, todos los inmuebles son nuevos
+    message = client.chat.completions.create(model="deepseek-chat",
+        messages=[
+                    {"role": "system", "content": "Eres un asistente inmobiliario"},
+                    {"role": "user","content": f"Genera un comentario aleatorio acerca de un {tipo} nuevo a la venta. El inmueble tiene {habitaciones} habitaciones y {dimensiones} metros cuadrados. Debe ser un comentario que imite un anuncio inmobiliario de carácter corto, de unos 200 caracteres máximo. No añadas hashtags ni la longitud del mensaje en la respuesta."},
+                    ],
+                    stream=False)
+    return message.choices[0].message.content
+
+client = OpenAI(api_key="sk-02fe7bac884b43478829814148287e55", base_url="https://api.deepseek.com")
 
 app.config['ULTIMO_TIEMPO_DESCRIPCION'] = 0
 @app.route('/inmueble/<id>/descripcion',methods=['GET'])
