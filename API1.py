@@ -155,117 +155,77 @@ def actualizar_inmueble(id: int):
     return jsonify({"mensaje": f"Inmueble {id} actualizado correctamente"}), 200
 @app.route('/inmuebles/<int:id>', methods=['DELETE'])
 @jwt_required()
-def eliminar_inmueble(id):
-    """
-    Elimina el inmueble con el ID dado.
-    - Solo administradores o el vendedor dueño pueden eliminarlo.
-    """
+def eliminar_inmueble(id: int):
     rol = get_jwt().get('rol')
-    usuario_actual = get_jwt_identity()
-
-    # Buscar inmueble
-    inmueble = next((i for i in inmuebles if i.get_id() == id), None)
-    if inmueble is None:
-        return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
-
-    # Reglas de autorización
-    if rol == 'administrador':
-        pass  # puede eliminar cualquiera
-    elif rol == 'vendedor':
-        if inmueble.duenyo.nombre != usuario_actual:
-            return jsonify({"error": "No tienes permiso para eliminar este inmueble"}), 403
-    else:
+    if rol not in ['vendedor', 'administrador']:
         return jsonify({"error": "No tienes permiso para eliminar inmuebles"}), 403
 
-    # Eliminar de la lista
-    inmuebles.remove(inmueble)
-    return jsonify({"mensaje": f"Inmueble {id} eliminado correctamente"}), 200
+    if id in inmuebles:
+        del inmuebles[id]
+        return jsonify({"mensaje": f"Inmueble {id} eliminado"}), 200
+    else:
+        return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
 
-@app.route('/inmuebles/<int:id>', methods=['POST'])
+@app.route('/inmuebles', methods=['POST'])
 @jwt_required()
-def anadir_inmueble(id):
+def anyadir_inmuebles():
     rol = get_jwt().get('rol')
-    if rol != 'administrador' and rol != 'vendedor':
+    if rol not in ['administrador', 'vendedor']:
         return jsonify({"error": "No tienes permiso para añadir inmuebles"}), 403
 
     datos = request.get_json()
-
-    # Comprobar tipo de inmueble
-    if 'tipo' not in datos:
+    tipo = datos.get('tipo')
+    if not tipo:
         return jsonify({'error': 'Falta el campo tipo (piso o vivienda_unifamiliar)'}), 400
-    tipo = datos['tipo']
 
-    # Comprobar campos básicos uno por uno
-    if 'nombre' not in datos or 'descripcion' not in datos or 'habitaciones' not in datos or \
-       'precio' not in datos or 'zona' not in datos or 'duenyo' not in datos:
-        return jsonify({'error': 'Faltan campos básicos'}), 400
+    # Comprobar campos básicos que todas las viviendas deben tener
+    campos_basicos = ['nombre', 'descripcion', 'habitaciones', 'precio', 'zona', 'duenyo']
+    if not all(campo in datos for campo in campos_basicos):
+        return jsonify({'error': f'Faltan campos básicos: {campos_basicos}'}), 400
 
-    # Buscar la zona
-    nombre_zona = datos['zona']
-    if nombre_zona in zonas:
-        zona = zonas[nombre_zona]
-    else:
-        return jsonify({'error': 'Zona no encontrada'}), 400
-
-    # Buscar el dueño
+    # Buscar la zona y el dueño en tus datos importados, por ejemplo:
+    zona = zonas.get(datos['zona'])
     duenyo = None
     for vendedor in vendedores:
         if vendedor.nombre == datos['duenyo']:
             duenyo = vendedor
             break
-    if duenyo is None:
+    if not duenyo:
         return jsonify({'error': 'Dueño no encontrado'}), 400
 
-    # Crear lista de habitaciones
+    # Asume que las habitaciones vienen como lista de dicts con tipo y atributos
+    habitaciones_json = datos['habitaciones']
     habitaciones_obj = []
-    for hab in datos['habitaciones']:
-        tipo_hab = hab['tipo']
-        superficie = hab['superficie']
-
+    for hab in habitaciones_json:
+        tipo_hab = hab.get('tipo')
+        superficie = hab.get('superficie')
         if tipo_hab == 'dormitorio':
-            habitaciones_obj.append(Dormitorio(superficie, hab.get('tiene_cama', False),
-                                               hab.get('tiene_lampara', False),
-                                               hab.get('tiene_mesa_estudio', False)))
+            habitaciones_obj.append(Dormitorio(superficie, hab.get('tiene_cama', False), hab.get('tiene_lampara', False), hab.get('tiene_mesa_estudio', False)))
         elif tipo_hab == 'cocina':
-            habitaciones_obj.append(Cocina(superficie, hab.get('tiene_frigorifico', False),
-                                           hab.get('tiene_horno', False),
-                                           hab.get('tiene_microondas', False),
-                                           hab.get('tiene_fregadero', False),
-                                           hab.get('tiene_mesa', False)))
+            habitaciones_obj.append(Cocina(superficie, hab.get('tiene_frigorifico', False), hab.get('tiene_horno', False), hab.get('tiene_microondas', False), hab.get('tiene_fregadero', False), hab.get('tiene_mesa', False)))
         elif tipo_hab == 'banyo':
-            habitaciones_obj.append(Banyo(superficie, hab.get('tiene_ducha', False),
-                                          hab.get('tiene_banyera', False),
-                                          hab.get('tiene_vater', False),
-                                          hab.get('tiene_lavabo', True)))
+            habitaciones_obj.append(Banyo(superficie, hab.get('tiene_ducha', False), hab.get('tiene_banyera', False), hab.get('tiene_vater', False), hab.get('tiene_lavabo', True)))
         elif tipo_hab == 'salon':
-            habitaciones_obj.append(Salon(superficie, hab.get('tiene_televisor', False),
-                                          hab.get('tiene_sofa', False),
-                                          hab.get('tiene_mesa_recreativa', False)))
+            habitaciones_obj.append(Salon(superficie, hab.get('tiene_televisor', False), hab.get('tiene_sofa', False), hab.get('tiene_mesa_recreativa', False)))
         else:
-            return jsonify({'error': 'Tipo de habitación no reconocido'}), 400
+            return jsonify({'error': f'Tipo de habitación {tipo_hab} no reconocido'}), 400
 
-    # Crear el inmueble
+    # Crear el inmueble según tipo
     if tipo == 'piso':
         planta = datos.get('planta')
         ascensor = datos.get('ascensor', False)
-        inmueble = Piso(datos['nombre'], habitaciones_obj, zona, datos['descripcion'], datos['precio'],
-                        duenyo, planta, ascensor)
+        inmueble = Piso(datos['nombre'], habitaciones_obj, zona, datos['descripcion'], datos['precio'], duenyo, planta, ascensor)
     elif tipo == 'vivienda_unifamiliar':
-        piscina = datos.get('tiene_piscina', False)
-        jardin = datos.get('jardin')
-        inmueble = ViviendaUnifamiliar(duenyo, datos['descripcion'], datos['precio'], datos['nombre'],
-                                       habitaciones_obj, zona, piscina, jardin)
+        tiene_piscina = datos.get('tiene_piscina', False)
+        jardin = datos.get('jardin', None)
+        inmueble = ViviendaUnifamiliar(duenyo, datos['descripcion'], datos['precio'], datos['nombre'], habitaciones_obj, zona, tiene_piscina, jardin)
     else:
-        return jsonify({'error': 'Tipo de inmueble no válido'}), 400
+        return jsonify({'error': f'Tipo de inmueble {tipo} no válido'}), 400
 
-    # Guardar el inmueble
     inmuebles.append(inmueble)
     zona.agregar_inmueble(inmueble)
 
-    return jsonify({
-        'mensaje': 'Inmueble añadido correctamente',
-        'inmueble': inmueble.to_dict()
-    }), 201
+    return jsonify({'mensaje': 'Inmueble añadido correctamente', 'inmueble': inmueble.to_dict()}), 201
 @app.route('/inmueble/<int:id>/escribir', methods=['POST'])
 def escribir_comentario(id):
     """
