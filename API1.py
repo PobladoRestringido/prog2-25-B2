@@ -155,6 +155,63 @@ def actualizar_inmueble(id: int):
         inmueble._Inmueble__zona = datos['zona']  # Idealmente asignar un objeto ZonaGeografica
 
     return jsonify({"mensaje": f"Inmueble {id} actualizado correctamente"}), 200
+@app.route('/inmuebles/<int:id>', methods=['DELETE'])
+@jwt_required()
+def eliminar_inmueble(id):
+    """
+    Elimina el inmueble con el ID dado.
+    - Solo administradores o el vendedor dueño pueden eliminarlo.
+    """
+    rol = get_jwt().get('rol')
+    usuario_actual = get_jwt_identity()
+
+    # Buscar inmueble
+    inmueble = next((i for i in inmuebles if i.get_id() == id), None)
+    if inmueble is None:
+        return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
+
+    # Reglas de autorización
+    if rol == 'administrador':
+        pass  # puede eliminar cualquiera
+    elif rol == 'vendedor':
+        if inmueble.duenyo.nombre != usuario_actual:
+            return jsonify({"error": "No tienes permiso para eliminar este inmueble"}), 403
+    else:
+        return jsonify({"error": "No tienes permiso para eliminar inmuebles"}), 403
+
+    # Eliminar de la lista
+    inmuebles.remove(inmueble)
+    return jsonify({"mensaje": f"Inmueble {id} eliminado correctamente"}), 200
+
+@app.route('/inmueble/<int:id>/escribir', methods=['POST'])
+def escribir_comentario(id):
+    """
+    Permite a un usuario escribir un comentario sobre un inmueble.
+
+    Parámetros
+    ----------
+    id: int
+        El identificador del inmueble para el cual se desea agregar el comentario.
+
+    Datos del cuerpo de la solicitud:
+    -------------------------------
+    comentario : str
+        El comentario que el usuario desea dejar.
+
+    Respuesta
+    ---------
+    Se devuelve una confirmación de que el comentario fue agregado correctamente.
+    """
+    # Obtener el comentario del cuerpo de la solicitud
+    comentario = request.json.get("comentario")
+
+    if not comentario:
+        return jsonify({"error": "Comentario no puede estar vacío"}), 400
+
+    # Guardar el comentario en la lista (con el ID del inmueble)
+    comentarios_usuario.append({"inmueble_id": id, "comentario": comentario})
+
+    return jsonify({"message": "Comentario agregado con éxito!"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
