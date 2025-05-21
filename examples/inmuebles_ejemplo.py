@@ -179,7 +179,7 @@ casa5 = ViviendaUnifamiliar(
     precio=370000,
     nombre="Casa Rústica",
     habitaciones=habitaciones_casa5,
-    zona=zonas["sur_madrid"],
+    zona=zonas["rural_asturias"],
     tiene_piscina=True,
     jardin="Jardín con vegetación autóctona"
 )
@@ -187,14 +187,14 @@ casa5 = ViviendaUnifamiliar(
 
 # Añadir inmuebles a las zonas correspondientes
 zonas["centro_madrid"].agregar_inmueble(piso1)
-zonas["centro_madrid"].agregar_inmueble(casa5)
+zonas["rural_asturias"].agregar_inmueble(casa5)
 
 zonas["norte_madrid"].agregar_inmueble(casa1)
 zonas["norte_madrid"].agregar_inmueble(casa3)
 
 zonas["sur_madrid"].agregar_inmueble(piso2)
 zonas["sur_madrid"].agregar_inmueble(piso5)
-zonas["rural_asturias"].agregar_inmueble(casa4)
+zonas["centro_madrid"].agregar_inmueble(casa4)
 
 zonas["rural_asturias"].agregar_inmueble(piso4)
 zonas["residencial_sevilla"].agregar_inmueble(casa2)
