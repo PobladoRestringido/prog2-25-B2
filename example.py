@@ -1,6 +1,6 @@
 import requests
 
-API_URL = "http://127.0.0.1:5000"
+API_URL = "https://pobladorestringido.pythonanywhere.com"
 token = None
 
 def set_token(new_token):
