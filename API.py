@@ -102,13 +102,13 @@ def registrar_usuario() -> tuple[Response, int]:
     data = request.get_json()
     nombre = data.get('nombre')
     contrasenya = data.get('contrasenya')
-    tipo_usuario = data.get('tipo')
+    rol = data.get('rol')
 
     # a continuación validamos la entrada.
-    if not nombre or not contrasenya or not tipo_usuario:
+    if not nombre or not contrasenya or not rol:
         return jsonify({'error': 'Faltan credenciales.'}), 400
 
-    if tipo_usuario not in ('comprador', 'vendedor', 'administrador'):
+    if rol not in ('comprador', 'vendedor', 'administrador'):
         return jsonify({'error': 'Tipo usuario no válido.'}), 400
 
     # Conectar a la base de datos.
@@ -129,14 +129,14 @@ def registrar_usuario() -> tuple[Response, int]:
             (nombre, contrasenya)
         )
 
-        # Insertar en la tabla correspondiente según el ``tipo_usuario``.
-        if tipo_usuario == "comprador":
+        # Insertar en la tabla correspondiente según el ``rol``.
+        if rol == "comprador":
             cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)",
                            (nombre,))
-        elif tipo_usuario == "vendedor":
+        elif rol == "vendedor":
             cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)",
                            (nombre,))
-        elif tipo_usuario == "administrador":
+        elif rol == "administrador":
             cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)",
                            (nombre,))
         conn.commit()
@@ -148,12 +148,12 @@ def registrar_usuario() -> tuple[Response, int]:
 
     conn.close()
 
-    if tipo_usuario == "comprador":
-        usuario = Comprador(nombre, contrasenya)
-    elif tipo_usuario == "vendedor":
-        usuario = Vendedor(nombre, contrasenya)
-    elif tipo_usuario == "administrador":
-        usuario = Administrador(nombre, contrasenya)
+    # Finalmente, creamos y devolvemos la representación json del usuario
+    # creado.
+    usuario = Comprador(nombre, contrasenya) if (rol ==
+                                                 'comprador') else (
+        Vendedor(nombre, contrasenya))  if rol == 'vendedor' else (
+        Administrador(nombre, contrasenya))
 
     access_token = create_access_token(
         identity=usuario.nombre,
@@ -168,16 +168,29 @@ def get_inmuebles() -> tuple[Response, int]:
     """
     Función que obtiene y devuelve la lista de todos los inmuebles registrados.
 
-    Returns
+    Returna
     -------
     tuple[Response, int]
-        JSON con la lista de inmuebles y HTTP 200 si la operación fue correcta.
+        JSON con la lista de inmuebles y HTTP 200 si la operación fue
+        correcta. Si hubo algún error durante la conexión a la base de
+        datos, devuelve HTTP 500.
     """
-    return jsonify([inmueble.to_dict() for inmueble in inmuebles]), 200
+    try:
+        with sqlite3.connect('base_datos/base_datos.db') as conn:
+            # Establecer el row_factory permite convertir las filas en diccionarios
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            # Extraemos los inmuebles de la base de datos
+            inmuebles = cursor.execute("SELECT * FROM Inmueble").fetchall()
+            # Convertimos cada fila a un dict
+            inmuebles_list = [inmueble.to_dict() for inmueble in inmuebles]
 
-'''
-SQL
-'''
+        return jsonify(inmuebles_list), 200
+
+    except Exception as e:
+        # Se captura cualquier error que ocurra y se retorna con HTTP 500
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 @jwt_required()
 def get_inmueble_id(id:int):
