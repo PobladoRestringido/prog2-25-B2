@@ -37,7 +37,7 @@ class Usuario:
         pickling).
     """
 
-    def __init__(self, nombre: str, contrasenya: str,rol:str):
+    def __init__(self, nombre: str, contrasenya: str,rol:str, contrasenya_en_hash=False):
         """
         Inicializa una nueva instancia de Usuario.
 
@@ -49,7 +49,6 @@ class Usuario:
             Contraseña en texto plano que se encriptará.
         """
         self.__nombre = nombre
-        self.__contrasenya = self._encriptar_contrasenya(contrasenya)
         self.__rol= rol
 
     @property

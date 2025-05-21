@@ -52,7 +52,14 @@ ARCHIVO_USUARIOS = "usuarios.json"
 usuarios_de_prueba = {
     "ana": Usuario("ana", "1234", "comprador"),
     "jose": Usuario("jose", "abcd", "vendedor"),
-    "admin": Usuario("admin", "admin", "admin")
+    "admin": Usuario("admin", "admin", "admin"),
+   "laura": Usuario("laura", "pass123", "comprador"),
+    "carlos": Usuario("carlos", "venta2025", "vendedor"),
+    "maria": Usuario("maria", "secure456", "comprador"),
+    "luis": Usuario("luis", "vendiendo123", "vendedor"),
+    "sofia": Usuario("sofia", "clave789", "comprador"),
+    "raul": Usuario("raul", "adminpass", "admin"),
+    "elena": Usuario("elena", "pass321", "vendedor")
 }
 
 
