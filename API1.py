@@ -42,3 +42,11 @@ def casa():
     """
     return 'Bienvenido a la API de inmuebles'
 
+
+
+
+
+
+
+
+#--------------------------------------------------de aqui para abajo escribire mis apis--------------
