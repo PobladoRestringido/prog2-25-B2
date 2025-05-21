@@ -9,6 +9,7 @@ from modelos.habitacion.cocina import Cocina
 from modelos.habitacion.banyo import Banyo
 from modelos.habitacion.salon import Salon
 from modelos.usuario.usuario import usuarios
+from modelos.usuario.usuario import Usuario
 
 from examples.inmuebles_ejemplo import inmuebles
 from examples.vendedor_ejemplo import vendedores
@@ -41,14 +42,135 @@ def casa():
     return 'Bienvenido a la API de inmuebles'
 
 
+import json
+import os
 
+
+ARCHIVO_USUARIOS = "usuarios.json"
+
+
+usuarios_de_prueba = {
+    "ana": Usuario("ana", "1234", "comprador"),
+    "jose": Usuario("jose", "abcd", "vendedor"),
+    "admin": Usuario("admin", "admin", "admin")
+}
+
+
+def guardar_usuarios(usuarios):
+    data = {nombre: usuario.to_dict() for nombre, usuario in usuarios.items()}
+    with open(ARCHIVO_USUARIOS, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+def cargar_usuarios():
+    """Carga usuarios desde archivo JSON, si no existe devuelve dict vacío"""
+    if not os.path.exists(ARCHIVO_USUARIOS):
+        return {}
+
+    try:
+        with open(ARCHIVO_USUARIOS, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        # En caso de error leyendo el archivo, devolver dict vacío
+        return {}
+
+    usuarios = {}
+    for nombre, info in data.items():
+        usuarios[nombre] = Usuario(
+            nombre=info["nombre"],
+            contrasenya=info["contrasenya"],
+            rol=info["rol"],
+            contrasenya_en_hash=True
+        )
+    return usuarios
+
+# Si no existe el archivo, lo creamos con los usuarios por defecto
+if not os.path.exists(ARCHIVO_USUARIOS):
+    guardar_usuarios(usuarios_de_prueba)
+
+# Ahora cargamos los usuarios (del archivo ya existente o recién creado)
+usuarios_registrados = cargar_usuarios()
+
+
+app = Flask(__name__) #Creamos la aplicación Flask
+app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
+jwt = JWTManager(app)
+
+
+@app.route('/') #Ruta inicial de la api
+def casa():
+    """
+       Función de inicio de la API. Esta función maneja la ruta raíz y
+       devuelve un mensaje de bienvenida.
+
+       Devuelve
+       --------------
+        -str: Un mensaje de texto dando la bienvenida a la API.
+    """
+    return 'Bienvenido a la API de inmuebles'
+
+'''
+COPIAR
+'''
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+    rol = data.get('rol')
+
+    if not nombre or not contrasenya or not rol:
+        return jsonify({"msg": "Faltan datos para registro"}), 400
+
+    if nombre in usuarios_registrados:
+        return jsonify({"msg": "El usuario ya existe"}), 409
+
+    nuevo_usuario = Usuario(nombre, contrasenya, rol)
+    usuarios_registrados[nombre] = nuevo_usuario
+    guardar_usuarios(usuarios_registrados)
+
+    return jsonify({"msg": f"Usuario {nombre} registrado correctamente"}), 201
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+
+    if not nombre or not contrasenya:
+        return jsonify({"msg": "Faltan datos para iniciar sesión"}), 400
+
+    usuario = usuarios_registrados.get(nombre)
+
+    if not usuario or not usuario.verificar_contrasenya(contrasenya):
+        return jsonify({"msg": "Usuario o contraseña incorrectos"}), 401
+
+    access_token = create_access_token(identity={"nombre": usuario.nombre, "rol": usuario.rol})
+    return jsonify(access_token=access_token), 200
+
+
+@app.route('/perfil', methods=['GET'])
+@jwt_required()
+def perfil():
+    identidad = get_jwt_identity()
+    return jsonify(logged_in_as=identidad), 200
+
+
+
+"""
+Los usuarios se guardarán y cargarán en usuarios.json con funciones que leen y escriben en JSON.
+Usaremos el método to_dict() de la clase Usuario para guardar el hash de la contraseña.
+Cada vez que se registra un usuario, se actualiza el archivo en disco
+El login usa los usuarios cargados del archivo.
+
+"""
 
 
 
 
 
 #--------------------------------------------------de aqui para abajo escribire mis apis--------------
-
+'''
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -67,7 +189,7 @@ def login():
             return jsonify({"access_token": access_token}), 200
 
     return jsonify({"error": "Nombre de usuario o contraseña incorrectos."}), 401
-
+'''
 @app.route('/inmuebles', methods=['GET'])
 def ver_inmuebles():
     """
@@ -180,8 +302,19 @@ def eliminar_inmueble(id: int):
     if rol not in ['vendedor', 'administrador']:
         return jsonify({"error": "No tienes permiso para eliminar inmuebles"}), 403
 
-    if id in inmuebles:
-        del inmuebles[id]
+    print(f"Intentando eliminar inmueble con ID: {id}")
+    print("Lista de inmuebles y sus IDs:")
+    for inmueble in inmuebles:
+        print(f"ID inmueble: {inmueble.get_id()}")
+
+    inmueble_encontrado = None
+    for inmueble in inmuebles:
+        if inmueble.get_id() == id:
+            inmueble_encontrado = inmueble
+            break
+
+    if inmueble_encontrado:
+        inmuebles.remove(inmueble_encontrado)
         return jsonify({"mensaje": f"Inmueble {id} eliminado"}), 200
     else:
         return jsonify({"error": f"Inmueble {id} no encontrado"}), 404

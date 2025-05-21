@@ -91,7 +91,7 @@ piso1 = Piso(
     ascensor=True
 )
 piso2 = Piso(
-    nombre="Piso Moderno",
+    nombre="Piso ideal",
     descripcion="Piso reformado con cocina americana",
     habitaciones=habitaciones_piso2,
     precio=210000,

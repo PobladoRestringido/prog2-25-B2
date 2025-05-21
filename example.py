@@ -124,13 +124,52 @@ def eliminar_inmueble():
     if not token:
         print("Debes hacer login primero")
         return
-    id = input("ID del inmueble a eliminar: ")
+    try:
+        id = int(input("ID del inmueble a eliminar: "))
+    except ValueError:
+        print("El ID debe ser un número entero.")
+        return
+
     headers = {'Authorization': f'Bearer {token}'}
     resp = requests.delete(f"{BASE_URL}/inmuebles/{id}", headers=headers)
     if resp.status_code == 200:
         print("Inmueble eliminado.")
     else:
         print("Error:", resp.text)
+
+
+def añadir_comentario():
+    global token
+    if not token:
+        print("Debes hacer login primero para poder comentar.")
+        return
+
+    try:
+        id_inmueble = int(input("Introduce el ID del inmueble para comentar: "))
+    except ValueError:
+        print("ID inválido.")
+        return
+
+    comentario = input("Escribe tu comentario: ").strip()
+    if not comentario:
+        print("El comentario no puede estar vacío.")
+        return
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {"comentario": comentario}
+
+    url = f"{BASE_URL}/inmueble/{id_inmueble}/escribir"
+
+    response = requests.post(url, json=data, headers=headers)
+
+    if response.status_code == 200:
+        print("Comentario añadido con éxito!")
+    else:
+        print("Error al añadir comentario:", response.json())
 
 
 def menu():
@@ -141,7 +180,8 @@ def menu():
         print("3. Ver inmueble por ID (admin sólo)")
         print("4. Añadir inmueble")
         print("5. Eliminar inmueble")
-        print("6. Salir")
+        print("6. Añadir comentario a inmueble")
+        print("7. Salir")
         opcion = input("Elige una opción: ")
 
         if opcion == "1":
@@ -155,6 +195,8 @@ def menu():
         elif opcion == "5":
             eliminar_inmueble()
         elif opcion == "6":
+            añadir_comentario()
+        elif opcion=="7":
             break
         else:
             print("Opción no válida")
