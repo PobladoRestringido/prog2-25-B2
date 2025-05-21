@@ -26,7 +26,6 @@ def hola():
     """
     return 'Bienvenido a la API de inmuebles'
 
-usuarios_registrados : list[Usuario, ...] = [] # todo implementar pickling
 # inicio sesión
 @app.route('/login', methods=['POST'])
 def iniciar_sesion() -> tuple[Response, int]:
@@ -109,7 +108,7 @@ def registrar_usuario() -> tuple[Response, int]:
 
 
 @app.route('/inmuebles', methods=['GET'])
-def get_inmuebles() -> tuple[Response, int]:
+def get_inmuebles():
     """
     Función que obtiene y devuelve la lista de todos los inmuebles registrados.
 
@@ -118,7 +117,10 @@ def get_inmuebles() -> tuple[Response, int]:
     tuple[Response, int]
         JSON con la lista de inmuebles y HTTP 200 si la operación fue correcta.
     """
-    return jsonify(inmuebles), 200
+    inmuebles_str_keys = {}
+    for clave in inmuebles:
+        inmuebles_str_keys[str(clave)] = inmuebles[clave]
+    return jsonify(inmuebles_str_keys), 200
 
 @app.route('/inmuebles/<int:id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 def get_inmueble_id(id:int):
@@ -171,8 +173,8 @@ def anyadir_inmuebles(id:int):
     'habitaciones',
     'zona',
     'direccion',
-    'precio de venta',
-    'precio de alquiler/por mes'
+    'precio_de_venta',
+    'precio_de_alquiler/por mes'
     }
 
     if not necesario.issubset(datos.keys()):
@@ -325,15 +327,12 @@ def mostrar_comentarios(id:int):
         tipo = 'piso'
         comentarios = random.sample(comentarios_pisos, 5)
 
-    inmueble = {'id': id}
-    for clave, valor in inmueble.items():
-        inmueble[clave] = valor
+    inmueble_con_comentarios = inmueble.copy()  # copia para no modificar el original
+    inmueble_con_comentarios['tipo'] = tipo
+    inmueble_con_comentarios['comentarios'] = comentarios
+    inmueble_con_comentarios['comentarios_usuario'] = comentarios_usuario
 
-    inmueble['tipo'] = tipo
-    inmueble['comentarios'] = comentarios
-    inmueble['comentarios_usuario']=comentarios_usuario
-
-    return jsonify(inmueble), 200
+    return jsonify(inmueble_con_comentarios), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

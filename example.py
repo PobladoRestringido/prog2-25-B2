@@ -214,13 +214,17 @@ def ver_comentarios_inmueble() -> str:
     response = requests.get(f"{BASE_URL}inmueble/{inmueble_id}/comentarios")
 
     if response.status_code == 200:
-        comentarioa = responde.json
+        comentarios = response.json
         if comentarios:
             for i in comentarios:
                 print(f"- {i}") # Devuelve los comentarios como un diccionario o lista de comentarios.
         else:
             print("No hay comentarios disponibles")
         return "Comentarios mostrados"
+    elif response.status_code == 404:
+        return "Inmueble no encontrado."
+    else:
+        return f"Error al obtener los comentarios. Código: {response.status_code}"
 
 
 def escribir_comentario() -> str:
@@ -284,7 +288,7 @@ def anyadir_inmueble() -> str:
     
     inmuebles = resp_get.json()
 
-    existing_ids = [str(i.get('id')) for i in inmuebles]
+    existing_ids = [str(i.get('id')) for i in inmuebles.values()]
 
     if inmueble_id in existing_ids:
         return f"Error: Ya existe un inmueble con ID {inmueble_id}."
@@ -316,6 +320,7 @@ def anyadir_inmueble() -> str:
         return "Error: El campo 'precio de alquiler' debe ser un número válido."
 
     data: dict = {
+        'id': int(inmueble_id),
         'dueño': dueño,
         'habitaciones': int(habitaciones),
         'zona': zona,
@@ -325,7 +330,7 @@ def anyadir_inmueble() -> str:
     }
 
     response = requests.post(f"{BASE_URL}inmuebles/{inmueble_id}", json=data)
-    if response.status_code == 200:
+    if response.status_code in [200,201]:
         return f"Inmueble {inmueble_id} añadido correctamente."
     else:
         return response.json().get('error', "Error desconocido.")
