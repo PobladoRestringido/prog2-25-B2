@@ -41,14 +41,19 @@ def registrar_usuario(nombre: str, contrasenya: str, usuarios_registrados: list[
     usuarios_registrados.append(usuario)
     return usuario
 
-def iniciar_sesion(nombre: str, contrasenya: str) -> Usuario:
+def iniciar_sesion(nombre: str, contrasenya: str, usuarios_registrados: list[Usuario, ...]) -> Usuario:
     """
     Verifica las credenciales de un usuario para iniciar sesión.
     Parámetros:
         - nombre: nombre de usuario
         - contrasenya: clave secreta
+        - usuarios_registrados: lista de usuarios registrados
+
     Retorna:
         - instancia de Usuario si es válido, None si no
+
+    Lanza:
+        - ValueError si las credenciales son incorrectas
     """
     for usuario in usuarios_registrados:
         if usuario.nombre == nombre and usuario.verificar_contrasenya(contrasenya):
