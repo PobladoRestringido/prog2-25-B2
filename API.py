@@ -20,6 +20,7 @@ import random
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 import sqlite3
+import openai
 
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
