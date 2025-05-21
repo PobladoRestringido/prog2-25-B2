@@ -444,6 +444,7 @@ def actualizar_inmueble(id: int):
 SQL (AUN NO MODIFICADA)
 '''
 @app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
+@jwt_required()
 def eliminar_inmueble(id:int):
     """
     Función para eliminar un inmueble existente
