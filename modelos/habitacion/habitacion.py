@@ -69,6 +69,6 @@ class Habitacion:
     def id(self) -> int:
         return self.__id
 
-    @@property
+    @property
     def superficie(self) -> float:
         return self.__superficie
