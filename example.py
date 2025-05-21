@@ -160,6 +160,18 @@ def mostrar_comentarios():
     else:
         print("Error:", resp.json())
 
+def obtener_descripcion(inmueble_id: int):
+    try:
+        response = requests.get(f"{API_URL}/inmueble/{inmueble_id}/descripcion")
+        if response.status_code == 200:
+            print("\n Descripción generada:")
+            print(response.json()["descripcion"])
+        else:
+            print(f"\nError {response.status_code}: {response.json().get('error', 'Desconocido')}")
+    except requests.exceptions.ConnectionError:
+        print("\nNo se pudo conectar con la API. ¿Está corriendo Flask?")
+
+
 def menu():
     while True:
         print("\n--- Menú API Inmuebles ---")
@@ -172,7 +184,8 @@ def menu():
         print("7. Eliminar inmueble")
         print("8. Escribir comentario")
         print("9. Mostrar comentarios")
-        print("10. Salir")
+        print("10. Descripción del inmueble")
+        print("11. Salir")
         opcion = input("Elige una opción: ")
 
         if opcion == "1":
@@ -193,7 +206,13 @@ def menu():
             escribir_comentario()
         elif opcion == "9":
             mostrar_comentarios()
-        elif opcion == "10":
+        elif opcion=="10":
+            try:
+                inmueble_id = int(input("Introduce el ID del inmueble: "))
+                obtener_descripcion(inmueble_id)
+            except ValueError:
+                print("ID inválido. Debe ser un número.")
+        elif opcion == "11":
             print("Saliendo...")
             break
         else:

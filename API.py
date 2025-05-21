@@ -22,6 +22,8 @@ from datetime import datetime
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 import sqlite3
+from openai import OpenAI
+import time
 
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
@@ -475,6 +477,7 @@ def actualizar_inmueble(id: int):
 SQL (AUN NO MODIFICADA)
 '''
 @app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
+@jwt_required()
 def eliminar_inmueble(id:int):
     """
     Función para eliminar un inmueble existente
@@ -537,51 +540,128 @@ def escribir_comentario(id):
     return jsonify({"message": "Comentario agregado con éxito!"}), 200
 
 @app.route('/inmueble/<id>/comentarios',methods=['GET'])
-def mostrar_comentarios(id:int):
+def mostrar_comentarios(id: int) -> tuple[Response, int]:
     """
-       Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
+    Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
 
-       Según el tipo de inmueble (determinado por la presencia de ciertas características como jardín o piscina),
-       se seleccionan 5 comentarios aleatorios de la lista correspondiente.
+    Según el tipo de inmueble (determinado por la presencia de jardín o piscina),
+    se seleccionan 5 comentarios aleatorios de la lista correspondiente.
 
-       Parámetros
-       ----------
-       id : int
-           El identificador único del inmueble.
+    Parámetros
+    ----------
+    id: int
+        El identificador único del inmueble.
 
-       Excepciones
-       ------------
-       Si el inmueble con el ID proporcionado no existe, se genera una respuesta de error con un código 404.
+    Excepciones
+    ------------
+    Si el inmueble con el ID proporcionado no existe, se genera una respuesta de error con un código 404.
+    Si ocurre un error con la base de datos, se genera un error 500.
 
-       Devuelve
-       --------
-       tuple
-           Una tupla que contiene:
-           - un diccionario con los detalles del inmueble, incluyendo su tipo y los comentarios aleatorios seleccionados.
-           - un código de estado HTTP (200 si todo está correcto, 404 si no se encuentra el inmueble).
+    Devuelve
+    --------
+    tuple
+        Una tupla que contiene:
+        - un diccionario con los detalles del inmueble, incluyendo su tipo y los comentarios aleatorios seleccionados.
+        - un código de estado HTTP (200 si todo está correcto, 404 si no se encuentra el inmueble, 500 en caso de error).
+    """
+    try:
+        with sqlite3.connect('base_datos/base_datos.db') as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-       """
-    inmueble = inmuebles.get(id)
+            cursor.execute("SELECT * FROM inmuebles WHERE id = ?", (id,))
+            inmueble = cursor.fetchone()
 
-    if not inmueble:
-        return jsonify({"error": "Inmueble no encontrado"}), 404
+            if not inmueble:
+                return jsonify({"error": "Inmueble no encontrado."}), 404
 
-    if 'jardin' in inmueble or 'tiene_piscina' in inmueble:
+            tipo = 'casa' if inmueble['jardin'] or inmueble['tiene_piscina'] else 'piso'
+
+
+            cursor.execute(
+                "SELECT texto FROM comentarios WHERE tipo = ? ORDER BY RANDOM() LIMIT 5",
+                (tipo,)
+            )
+            comentarios = [row['texto'] for row in cursor.fetchall()]
+
+            cursor.execute(
+                "SELECT texto FROM comentarios_usuario WHERE inmueble_id = ?",
+                (id,)
+            )
+            comentarios_usuario = [row['texto'] for row in cursor.fetchall()]
+
+            respuesta = {
+                "id": inmueble['id'],
+                "tipo": tipo,
+                "comentarios": comentarios,
+                "comentarios_usuario": comentarios_usuario
+            }
+
+            return jsonify(respuesta), 200
+
+    except sqlite3.Error as err:
+        return jsonify({
+            "error": "Error al acceder a la base de datos.",
+            "message": str(err)
+        }), 500
+
+'''
+Cuando se termine implemento mi api de descripciones mediante IA
+'''
+
+def deepseek_generatecontent(tipo, habitaciones):
+    # Generar un número aleatorio de metros dentro de un rango razonable
+    dimensiones = random.randint(50, 150)  # Puedes ajustar el rango según tus necesidades
+
+    # Generar el mensaje para Deepseek, todos los inmuebles son nuevos
+    message = client.chat.completions.create(model="deepseek-chat",
+        messages=[
+                    {"role": "system", "content": "Eres un asistente inmobiliario"},
+                    {"role": "user","content": f"Genera un comentario aleatorio acerca de un {tipo} nuevo a la venta. El inmueble tiene {habitaciones} habitaciones y {dimensiones} metros cuadrados. Debe ser un comentario que imite un anuncio inmobiliario de carácter corto, de unos 200 caracteres máximo. No añadas hashtags ni la longitud del mensaje en la respuesta."},
+                    ],
+                    stream=False)
+    return message.choices[0].message.content
+
+client = OpenAI(api_key="sk-02fe7bac884b43478829814148287e55", base_url="https://api.deepseek.com")
+
+app.config['ULTIMO_TIEMPO_DESCRIPCION'] = 0
+@app.route('/inmueble/<id>/descripcion',methods=['GET'])
+def mostrar_descripcion(id:int):
+
+
+    if id not in inmuebles:
+        return {'error': 'Inmueble no encontrado'}, 404
+
+
+    inmueble = inmuebles[id]
+    habitaciones = inmueble.get('habitaciones', 0)
+    piscina = inmueble.get('piscina', None)
+    jardin = inmueble.get('jardin', None)
+
+
+    if piscina or jardin:
         tipo = 'casa'
-        comentarios = random.sample(comentarios_casas, 5)
     else:
         tipo = 'piso'
-        comentarios = random.sample(comentarios_pisos, 5)
 
-    inmueble = {'id': id}
-    for clave, valor in inmueble.items():
-        inmueble[clave] = valor
+        # Comprobación de tiempo de espera
+        tiempo_actual = time.time()
+        ultimo_tiempo = app.config.get('ULTIMO_TIEMPO_DESCRIPCION', 0)
+        espera = 600  # 10 minutos = 600 segundos
 
-    inmueble['tipo'] = tipo
-    inmueble['comentarios'] = comentarios
-    inmueble['comentarios_usuario']=comentarios_usuario
+        if (tiempo_actual - ultimo_tiempo) < espera:
+            tiempo_restante = int(espera - (tiempo_actual - ultimo_tiempo))
+            return jsonify(
+                {"error": f"Debes esperar {tiempo_restante} segundos antes de generar otra descripción."}), 429
 
-    return jsonify(inmueble), 200
+        # Actualizar el tiempo de última generación
+        app.config['ULTIMO_TIEMPO_DESCRIPCION'] = tiempo_actual
+
+
+    descripcion = deepseek_generatecontent(tipo, habitaciones)
+
+
+    return {"descripcion": descripcion}, 200
 
 if __name__ == '__main__':
     app.run(debug=True)
