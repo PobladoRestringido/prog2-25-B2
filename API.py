@@ -16,6 +16,8 @@ from examples.Zonas_ejemplo import zonas
 from serializacion.pickling import cargar_data
 
 import random
+from datetime import datetime
+# para guardar la fecha de creación de Publicaciones y Comentarios.
 
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -278,47 +280,119 @@ def get_inmueble_id(id: int) -> tuple[Response, int]:
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+"""
 @app.route('/inmuebles/<int:id>', methods=['POST'])
 @jwt_required()
-def anyadir_inmuebles():
+def crear_publicacion() -> tuple[Response, int]:"""
     """
-    Función que permite añadir un inmueble que no esté registrado
+    Función que permite crear una nueva publicación.
 
+    Parámetros
+    ----------
+    inmueble
+        Representación JSON del Inmueble que se desea listar.
+    precio : float
+        Precio con el que listar el inmueble.
+    descripcion : Optional[str]
+        Descripción opcional del inmueble.
 
     Devuelve
     -----------
-    -Diccionario con los detalles que introduzcamos del inmueble si existe, si no nos sale un error
+    tuple[Response, int]:
+        Representación de la publicación junto con HTTP 200 si la creación
+        fue exitosa.
+        En caso contrario, se devolverá un mensaje de error y HTTP 400.
+    """
+    """
+    rol = get_jwt().get('rol').lower()
+    if rol != 'administrador' and rol != 'vendedor':
+        return (jsonify({"error": "Sólo vendedores o admin pueden añadir "
+                                  "nuevos inmuebles"}), 403)
 
-    -código de estado: 200 si la solicitud funciona sin ningún problema
-                       404 si la solicitud tiene algún problema
+    data = request.get_json()
+    inmueble_usuario = data['inmueble']
+    precio_listado = data['precio']
+    descripcion = data['descripcion']
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if not inmueble_usuario or not precio_listado:
+        return jsonify({'error': 'Faltan parámetros'}), 400
+
+    # Comprobar que el inmueble que se intenta listar existe.
+    with (sqlite3.connect('base_datos/base_datos.db') as conn):
+        conn.row_factory = sqlite3.Row  # esto hace que las filas de la
+        # db se extraigan directamente como diccionarios.
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT * FROM Inmueble WHERE id = ?',
+                       (inmueble_usuario['id'],))
+        inmueble_db = cursor.fetchone()
+
+        if inmueble_db is None:
+            return jsonify({'error': 'El inmueble que se ha intentado '
+                                     'publicar no existe en la base de '
+                                     'datos'}), 400
     """
 
-    @app.route('/inmuebles/<int:id>', methods=['POST'])
-    @jwt_required()
-    def anadir_inmueble(id):
-        rol = get_jwt().get('rol')
-        if rol != 'administrador' and rol != 'vendedor':
-            return jsonify({"error": "No tienes permiso para añadir inmuebles"}), 403
+@app.route('/inmuebles/<int:id>', methods=['POST'])
+@jwt_required()
+def crear_inmueble() -> tuple[Response, int]:
+    """
+    Método que permite crear un nuevo inmueble.
 
-        datos = request.get_json()
+    Parámetros
+    ----------
+    habitaciones : list[Habitacion]
+        Lista de las habitaciones que conforman el inmueble.
+    zona : Optional[str]
+        Zona geográfica en la que se encuentra el inmueble.
 
-        # Comprobar tipo de inmueble
-        if 'tipo' not in datos:
-            return jsonify({'error': 'Falta el campo tipo (piso o vivienda_unifamiliar)'}), 400
-        tipo = datos['tipo']
+    Devuelve
+    -----------
+    tuple[Response, int]:
+        Representación del inmueble junto con HTTP 200 si la creación
+        fue exitosa.
+        En caso contrario, se devolverá un mensaje de error y HTTP 4XX.
+    """
 
-        # Comprobar campos básicos uno por uno
-        if 'nombre' not in datos or 'descripcion' not in datos or 'habitaciones' not in datos or \
-                'precio' not in datos or 'zona' not in datos or 'duenyo' not in datos:
-            return jsonify({'error': 'Faltan campos básicos'}), 400
+    # Verificamos los permisos del usuario.
+    rol = get_jwt().get('rol').lower()
+    if rol != 'administrador' and rol != 'vendedor':
+        return (jsonify({"error": "Sólo vendedores o admin pueden añadir "
+                                  "nuevos inmuebles"}), 403)
 
-        # Buscar la zona
+    # Extraemos la `data` del request.
+    data = request.get_json()
+    lista_habitaciones = data.get('habitaciones')
+    zona = data.get('zona')
+
+    # Verificamos que se haya proporcionado toda la información adecuada.
+    if not lista_habitaciones:
+        return jsonify({'error': 'Faltan parámetros'}), 400
+
+    # Añadimos el inmueble a la base de datos
+    with sqlite3.connect('base_datos/base_datos.db') as conn:
+        #conn.row_factory = sqlite3.Row  # esto hace que las filas de la
+        # db se extraigan directamente como diccionarios.
+        cursor = conn.cursor()
+
+        cursor.execute('INSERT INTO Inmueble VALUES = () ?',
+                             (inmueble_usuario['id'],))
+        inmueble_db = cursor.fetchone()
+
+        if inmueble_db is None:
+            return jsonify({'error': 'El inmueble que se ha intentado '
+                                     'publicar no existe en la base de '
+                                     'datos'}), 400
+
+        """# Buscar la zona
         nombre_zona = datos['zona']
         if nombre_zona in zonas:
             zona = zonas[nombre_zona]
         else:
             return jsonify({'error': 'Zona no encontrada'}), 400
-
+        """
+        """
         # Buscar el dueño
         duenyo = None
         for vendedor in vendedores:
@@ -327,7 +401,7 @@ def anyadir_inmuebles():
                 break
         if duenyo is None:
             return jsonify({'error': 'Dueño no encontrado'}), 400
-
+        """
         # Crear lista de habitaciones
         habitaciones_obj = []
         for hab in datos['habitaciones']:

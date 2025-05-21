@@ -23,10 +23,9 @@ CREATE TABLE IF NOT EXISTS Usuario (
         );
 
 CREATE TABLE IF NOT EXISTS Inmueble (
-    id INT(11),
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     zona VARCHAR(50),
     nombre_propietario VARCHAR(50),
-    PRIMARY KEY (id),
     FOREIGN KEY (nombre_propietario) REFERENCES Usuario(nombre)
 );
 
