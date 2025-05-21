@@ -1,5 +1,3 @@
-# inmuebles_ejemplo.py
-# Author: Pablo Reig Sánchez
 """
 Creación inmuebles de ejemplo
 
