@@ -120,7 +120,7 @@ def get_inmuebles() -> tuple[Response, int]:
     """
     return jsonify(inmuebles), 200
 
-@app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
+@app.route('/inmuebles/<int:id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
 def get_inmueble_id(id:int):
     """
     Función que nos muestra un inmueble por su ID
@@ -145,7 +145,7 @@ def get_inmueble_id(id:int):
     return jsonify(datos), 200
 
 
-@app.route('/inmuebles/<id>', methods=['POST'])#Ruta para crear un nuevo inmueble en la base de datos
+@app.route('/inmuebles/<int:id>', methods=['POST'])#Ruta para crear un nuevo inmueble en la base de datos
 def anyadir_inmuebles(id:int):
     """
     Función que permite añadir un inmueble que no esté registrado
@@ -196,7 +196,7 @@ def anyadir_inmuebles(id:int):
 
     return jsonify({'mensaje': f'Inmueble {id} añadido correctamente'}), 201
     
-@app.route('/inmuebles/<id>', methods=['PUT'])#Ruta para actualizar los inmuebles
+@app.route('/inmuebles/<int:id>', methods=['PUT'])#Ruta para actualizar los inmuebles
 def actualizar_inmueble(id:int):
     """
     Función para actualizar los inmuebles existentes
@@ -232,7 +232,7 @@ def actualizar_inmueble(id:int):
         return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
 
 
-@app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
+@app.route('/inmuebles/<int:id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
 def eliminar_inmueble(id:int):
     """
     Función para eliminar un inmueble existente
@@ -288,7 +288,7 @@ def escribir_comentario(id):
 
     return jsonify({"message": "Comentario agregado con éxito!"}), 200
 
-@app.route('/inmueble/<id>/comentarios',methods=['GET'])
+@app.route('/inmueble/<int:id>/comentarios',methods=['GET'])
 def mostrar_comentarios(id:int):
     """
        Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
