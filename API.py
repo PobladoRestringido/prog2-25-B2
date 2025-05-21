@@ -22,7 +22,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 import sqlite3
-from openai import OpenAI
+# from openai import OpenAI
 import time
 
 app = Flask(__name__) #Creamos la aplicación Flask
@@ -286,7 +286,7 @@ def get_inmueble_id(id: int) -> tuple[Response, int]:
 @app.route('/inmuebles/<int:id>', methods=['POST'])
 @jwt_required()
 def crear_publicacion() -> tuple[Response, int]:"""
-    """
+"""
     Función que permite crear una nueva publicación.
 
     Parámetros
@@ -305,7 +305,7 @@ def crear_publicacion() -> tuple[Response, int]:"""
         fue exitosa.
         En caso contrario, se devolverá un mensaje de error y HTTP 400.
     """
-    """
+"""
     rol = get_jwt().get('rol').lower()
     if rol != 'administrador' and rol != 'vendedor':
         return (jsonify({"error": "Sólo vendedores o admin pueden añadir "
@@ -609,6 +609,7 @@ def mostrar_comentarios(id: int) -> tuple[Response, int]:
 Cuando se termine implemento mi api de descripciones mediante IA
 '''
 
+"""
 def deepseek_generatecontent(tipo, habitaciones):
     # Generar un número aleatorio de metros dentro de un rango razonable
     dimensiones = random.randint(50, 150)  # Puedes ajustar el rango según tus necesidades
@@ -622,7 +623,8 @@ def deepseek_generatecontent(tipo, habitaciones):
                     stream=False)
     return message.choices[0].message.content
 
-client = OpenAI(api_key="sk-02fe7bac884b43478829814148287e55", base_url="https://api.deepseek.com")
+ client = OpenAI(api_key="sk-02fe7bac884b43478829814148287e55", base_url="https://api.deepseek.com")
+"""
 
 app.config['ULTIMO_TIEMPO_DESCRIPCION'] = 0
 @app.route('/inmueble/<id>/descripcion',methods=['GET'])
@@ -658,10 +660,10 @@ def mostrar_descripcion(id:int):
         app.config['ULTIMO_TIEMPO_DESCRIPCION'] = tiempo_actual
 
 
-    descripcion = deepseek_generatecontent(tipo, habitaciones)
+    #descripcion = deepseek_generatecontent(tipo, habitaciones)
 
 
-    return {"descripcion": descripcion}, 200
+    return {"descripcion": None}, 200
 
 if __name__ == '__main__':
     app.run(debug=True)
