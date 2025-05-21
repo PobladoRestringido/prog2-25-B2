@@ -229,7 +229,8 @@ def get_inmuebles() -> tuple[Response, int]:
         # Se captura cualquier error que ocurra y se retorna con HTTP 500
         return jsonify({'error': str(e)}), 500
 
-@app.route('/inmuebles/<id>', methods=['GET'])#Ruta para ver un inmueble utilizando su id
+@app.route('/inmuebles/<id>', methods=['GET']) # Ruta para ver un inmueble
+# utilizando su id
 @jwt_required()
 def get_inmueble_id(id: int) -> tuple[Response, int]:
     """
@@ -256,13 +257,14 @@ def get_inmueble_id(id: int) -> tuple[Response, int]:
         - Si ocurre un error interno:
             JSON con mensaje de error y código HTTP 500.
     """
-    rol = get_jwt().get('rol')
+    rol = get_jwt().get('rol').lower()
     if rol != 'administrador':
         return jsonify({"error": "Acceso denegado, solo administradores pueden acceder"}), 403
 
     try:
         with sqlite3.connect('base_datos/base_datos.db') as conn:
-            conn.row_factory = sqlite3.Row
+            conn.row_factory = sqlite3.Row # esto hace que las filas de la
+            # db se extraigan directamente como diccionarios.
             cursor = conn.cursor()
 
             cursor.execute("SELECT * FROM Inmueble WHERE id = ?", (id,))
@@ -271,15 +273,11 @@ def get_inmueble_id(id: int) -> tuple[Response, int]:
             if row is None:
                 return jsonify({"error": "Inmueble no encontrado"}), 404
 
-            inmueble = dict(row)
-            return jsonify(inmueble), 200
+            return jsonify(row), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-'''
-SQL
-'''
 @app.route('/inmuebles/<int:id>', methods=['POST'])
 @jwt_required()
 def anyadir_inmuebles():
