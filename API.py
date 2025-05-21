@@ -576,5 +576,45 @@ def mostrar_comentarios(id: int) -> tuple[Response, int]:
 '''
 Cuando se termine implemento mi api de descripciones mediante IA
 '''
+
+app.config['ULTIMO_TIEMPO_DESCRIPCION'] = 0
+@app.route('/inmueble/<id>/descripcion',methods=['GET'])
+def mostrar_descripcion(id:int):
+
+
+    if id not in inmuebles:
+        return {'error': 'Inmueble no encontrado'}, 404
+
+
+    inmueble = inmuebles[id]
+    habitaciones = inmueble.get('habitaciones', 0)
+    piscina = inmueble.get('piscina', None)
+    jardin = inmueble.get('jardin', None)
+
+
+    if piscina or jardin:
+        tipo = 'casa'
+    else:
+        tipo = 'piso'
+
+        # Comprobación de tiempo de espera
+        tiempo_actual = time.time()
+        ultimo_tiempo = app.config.get('ULTIMO_TIEMPO_DESCRIPCION', 0)
+        espera = 600  # 10 minutos = 600 segundos
+
+        if (tiempo_actual - ultimo_tiempo) < espera:
+            tiempo_restante = int(espera - (tiempo_actual - ultimo_tiempo))
+            return jsonify(
+                {"error": f"Debes esperar {tiempo_restante} segundos antes de generar otra descripción."}), 429
+
+        # Actualizar el tiempo de última generación
+        app.config['ULTIMO_TIEMPO_DESCRIPCION'] = tiempo_actual
+
+
+    descripcion = deepseek_generatecontent(tipo, habitaciones)
+
+
+    return {"descripcion": descripcion}, 200
+
 if __name__ == '__main__':
     app.run(debug=True)
