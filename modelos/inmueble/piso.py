@@ -1,5 +1,5 @@
 # piso.py
-from modelos.inmueble import Inmueble
+from modelos.inmueble.inmueble import Inmueble
 
 class Piso(Inmueble):
     """
@@ -25,7 +25,7 @@ class Piso(Inmueble):
         existencia de ascensor
     """
 
-    def __init__(self, nombre : str, descripcion : str, habitaciones : list['Habitacion'], precio : float, zona : 'ZonaGeográfica', duenyo : 'Persona', planta : int, ascensor : bool = False) -> None:
+    def __init__(self, nombre : str, habitaciones : list['Habitacion'],zona : 'ZonaGeográfica',descripcion : str, precio : float, duenyo : 'Persona', planta : int, ascensor : bool = False) -> None:
         """
         Parámetros
         ----------
@@ -51,11 +51,13 @@ class Piso(Inmueble):
         ValueError
             Si el número de planta es negativo.
         """
-        super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
+        super().__init__(duenyo,habitaciones,zona,nombre,descripcion,precio)
+        self.__planta = planta
         self.__tiene_ascensor = ascensor
+
         if planta < 0:
             raise ValueError("La planta no puede ser negativa")
-        self.__planta = planta
+
 
     @property
     def tiene_ascensor(self) -> bool:
@@ -71,6 +73,9 @@ class Piso(Inmueble):
             raise ValueError("La planta no puede ser negativa")
         self.__planta = nueva_planta
 
+    def tipo(self)-> str:
+        return "piso"
+
     def __len__(self):
         return len(self.habitaciones)
 
@@ -82,3 +87,17 @@ class Piso(Inmueble):
                 f"Precio: {self.precio} €\n"
                 f"Zona: {self.zona}")
         return base
+
+    def to_dict(self):
+        return {
+            "tipo": "piso",
+            "nombre": self.nombre,
+            "descripcion": self.descripcion,
+            "precio": self.precio,
+            "zona": self.zona.nombre,
+            "pais": self.zona.pais,
+            "duenyo": self.duenyo.nombre,
+            "planta": self.planta,
+            "ascensor": self.tiene_ascensor,
+            "habitaciones": [str(hab) for hab in self.habitaciones]
+        }

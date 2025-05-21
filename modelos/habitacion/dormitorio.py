@@ -1,4 +1,4 @@
-from modelos.habitacion import Habitacion
+from modelos.habitacion.habitacion import Habitacion
 
 class Dormitorio(Habitacion):
     """
@@ -34,4 +34,37 @@ class Dormitorio(Habitacion):
         self.__tiene_lampara = tiene_lampara
         self.__tiene_mesa_estudio = tiene_mesa_estudio
 
+
+    @property
+    def tiene_cama(self):
+        return self.__tiene_cama
+
+    @property
+    def tiene_lampara(self):
+        return self.__tiene_lampara
+
+    @property
+    def tiene_mesa_estudio(self):
+        return self.__tiene_mesa_estudio
+
+    def __str__(self):
+        extras = []
+        if self.tiene_cama:
+            extras.append("cama")
+        if self.tiene_lampara:
+            extras.append("lámpara")
+        if self.tiene_mesa_estudio:
+            extras.append("mesa de estudio")
+        extras_str = ", ".join(extras) if extras else "sin extras"
+        return f"Dormitorio {extras_str} - {super().__str__()}"
+
+    def to_dict(self):
+        base = super().to_dict()
+        base.update({
+            "tipo": "dormitorio",
+            "tiene_cama": self.__tiene_cama,
+            "tiene_lampara": self.__tiene_lampara,
+            "tiene_mesa_estudio": self.__tiene_mesa_estudio
+        })
+        return base
         

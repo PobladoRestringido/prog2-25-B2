@@ -1,5 +1,5 @@
-from modelos.inmueble import Inmueble # lo importamos para poder usarlo en type-hinting
-from modelos.vendedor import Vendedor
+from modelos.inmueble.inmueble import Inmueble # lo importamos para poder usarlo en type-hinting
+from modelos.usuario.vendedor import Vendedor
 from modelos.comentario import Comentario
 from typing import List, Optional
 

@@ -1,4 +1,4 @@
-from modelos.habitacion import Habitacion
+from modelos.habitacion.habitacion import Habitacion
 
 class Cocina(Habitacion):
     """
@@ -45,4 +45,54 @@ class Cocina(Habitacion):
         self.__tiene_microondas = tiene_microondas
         self.__tiene_fregadero = tiene_fregadero
         self.__tiene_mesa = tiene_mesa
+
+    @property
+    def tiene_frigorifico(self):
+        return self.__tiene_frigorifico
+
+    @property
+    def tiene_horno(self):
+        return self.__tiene_horno
+
+    @property
+    def tiene_microondas(self):
+        return self.__tiene_microondas
+
+    @property
+    def tiene_fregadero(self):
+        return self.__tiene_fregadero
+
+    @property
+    def tiene_mesa(self):
+        return self.__tiene_mesa
+
+    def __str__(self):
+        extras = []
+        if self.tiene_frigorifico:
+            extras.append("frigorífico")
+        if self.tiene_horno:
+            extras.append("horno")
+        if self.tiene_microondas:
+            extras.append("microondas")
+        if self.tiene_fregadero:
+            extras.append("fregadero")
+        if self.tiene_mesa:
+            extras.append("mesa")
+        extras_str = ", ".join(extras) if extras else "sin extras"
+        return f"Cocina {extras_str} - {super().__str__()}"
+
+    def to_dict(self):
+        base = super().to_dict()
+        base.update({
+            "tipo": "cocina",
+            "tiene_frigorifico": self.__tiene_frigorifico,
+            "tiene_horno": self.__tiene_horno,
+            "tiene_microondas": self.__tiene_microondas,
+            "tiene_fregadero": self.__tiene_fregadero,
+            "tiene_mesa": self.__tiene_mesa
+        })
+        return base
+
+    # [todo] implementar el método __str__, que describa cada cocina con
+    #  respecto a las características que presenta
 

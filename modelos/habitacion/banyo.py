@@ -1,4 +1,4 @@
-from modelos.habitacion import Habitacion
+from modelos.habitacion.habitacion import Habitacion
 
 class Banyo(Habitacion):
     """
@@ -6,15 +6,15 @@ class Banyo(Habitacion):
 
         Attributes
         ----------
-        superficie : float
+        superficie: float
             Superficie total del baño en metros cuadrados (heredado de Habitacion).
-        tiene_ducha : bool
+        tiene_ducha: bool
             Indica si el baño dispone de ducha.
-        tiene_banyera : bool
+        tiene_banyera: bool
             Indica si el baño dispone de bañera.
-        tiene_vater : bool
+        tiene_vater: bool
             Indica si el baño dispone de váter/inodoro.
-        tiene_lavabo : bool
+        tiene_lavabo: bool
             Indica si el baño dispone de lavabo. Por defecto, True.
         """
 
@@ -41,3 +41,43 @@ class Banyo(Habitacion):
         self.__tiene_banyera = tiene_banyera
         self.__tiene_vater = tiene_vater
         self.__tiene_lavabo = tiene_lavabo
+
+    @property
+    def tiene_ducha(self):
+        return self.__tiene_ducha
+
+    @property
+    def tiene_banyera(self):
+        return self.__tiene_banyera
+
+    @property
+    def tiene_vater(self):
+        return self.__tiene_vater
+
+    @property
+    def tiene_lavabo(self):
+        return self.__tiene_lavabo
+
+    def __str__(self):
+        extras = []
+        if self.tiene_ducha:
+            extras.append("ducha")
+        if self.tiene_banyera:
+            extras.append("bañera")
+        if self.tiene_vater:
+            extras.append("váter")
+        if self.tiene_lavabo:
+            extras.append("lavabo")
+        extras_str = ", ".join(extras) if extras else "sin extras"
+        return f"Baño {extras_str} - {super().__str__()}"
+
+    def to_dict(self):
+        base = super().to_dict()
+        base.update({
+            "tipo": "banyo",
+            "tiene_ducha": self.__tiene_ducha,
+            "tiene_banyera": self.__tiene_banyera,
+            "tiene_vater": self.__tiene_vater,
+            "tiene_lavabo": self.__tiene_lavabo
+        })
+        return base

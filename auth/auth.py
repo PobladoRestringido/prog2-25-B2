@@ -1,10 +1,10 @@
 # auth.py
 # Funciones de login y registro
 
-from modelos.usuario import Usuario
-from modelos.comprador import Comprador
-from modelos.vendedor import Vendedor
-from modelos.administrador import Administrador
+from modelos.usuario.usuario import Usuario
+from modelos.usuario.comprador import Comprador
+from modelos.usuario.vendedor import Vendedor
+from modelos.usuario.usuario import Administrador
 
 
 
