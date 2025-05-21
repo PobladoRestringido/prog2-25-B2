@@ -267,10 +267,9 @@ def mostrar_comentarios(id:int):
 
     return inmueble
 
-ultimo_acceso=0
+app.config['ULTIMO_TIEMPO_DESCRIPCION'] = 0
 @app.route('/inmueble/<id>/descripcion',methods=['GET'])
 def mostrar_descripcion(id:int):
-    global ultimo_acceso
 
 
     if id not in inmuebles:
@@ -288,16 +287,18 @@ def mostrar_descripcion(id:int):
     else:
         tipo = 'piso'
 
+        # Comprobación de tiempo de espera
+        tiempo_actual = time.time()
+        ultimo_tiempo = app.config.get('ULTIMO_TIEMPO_DESCRIPCION', 0)
+        espera = 600  # 10 minutos = 600 segundos
 
-    tiempo_actual = time.time()
+        if (tiempo_actual - ultimo_tiempo) < espera:
+            tiempo_restante = int(espera - (tiempo_actual - ultimo_tiempo))
+            return jsonify(
+                {"error": f"Debes esperar {tiempo_restante} segundos antes de generar otra descripción."}), 429
 
-
-    if (tiempo_actual - ultimo_acceso) < 3600:
-        tiempo_espera = 3600 - (tiempo_actual - ultimo_acceso)
-        return {"error": f"Por favor espera {int(tiempo_espera)} segundos antes de hacer otra solicitud."}, 429
-
-
-    ultimo_acceso = tiempo_actual
+        # Actualizar el tiempo de última generación
+        app.config['ULTIMO_TIEMPO_DESCRIPCION'] = tiempo_actual
 
 
     descripcion = deepseek_generatecontent(tipo, habitaciones)
