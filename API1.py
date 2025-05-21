@@ -8,6 +8,7 @@ from modelos.habitacion.dormitorio import Dormitorio
 from modelos.habitacion.cocina import Cocina
 from modelos.habitacion.banyo import Banyo
 from modelos.habitacion.salon import Salon
+from modelos.usuario.usuario import usuarios
 
 from examples.inmuebles_ejemplo import inmuebles
 from examples.vendedor_ejemplo import vendedores
@@ -25,7 +26,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
 jwt = JWTManager(app)
-usuarios_registrados = []
+usuarios_registrados = list(usuarios.values())
 
 @app.route('/') #Ruta inicial de la api
 def casa():
@@ -48,7 +49,24 @@ def casa():
 
 #--------------------------------------------------de aqui para abajo escribire mis apis--------------
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
 
+    if not nombre or not contrasenya:
+        return jsonify({"error": "Faltan credenciales."}), 400
+
+    for usuario in usuarios_registrados:
+        if usuario.nombre == nombre and usuario.verificar_contrasenya(contrasenya):
+            access_token = create_access_token(
+                identity=usuario.nombre,
+                additional_claims={"rol": usuario.rol}
+            )
+            return jsonify({"access_token": access_token}), 200
+
+    return jsonify({"error": "Nombre de usuario o contraseña incorrectos."}), 401
 
 @app.route('/inmuebles', methods=['GET'])
 def ver_inmuebles():

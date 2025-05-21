@@ -129,5 +129,5 @@ class Usuario:
 usuarios = {
     "ana": Usuario("ana", "1234", "comprador"),
     "jose": Usuario("jose", "abcd", "vendedor"),
-    "admin": Usuario("admin", "admin", "admin")
+    "admin": Usuario("admin", "admin", "administrador")
 }

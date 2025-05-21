@@ -1,6 +1,6 @@
 import requests
 
-API_URL = "http://127.0.0.1:5000"
+BASE_URL = "http://127.0.0.1:5000"
 token = None
 
 def set_token(new_token):
@@ -17,68 +17,72 @@ def registrar():
     nombre = input("Nuevo nombre de usuario: ")
     contrasenya = input("Nueva contraseña: ")
     rol = input("Rol (comprador, vendedor, administrador): ")
-    resp = requests.post(f"{API_URL}/register", json={"nombre": nombre, "contrasenya": contrasenya, "rol": rol})
+    resp = requests.post(f"{BASE_URL}/register", json={"nombre": nombre, "contrasenya": contrasenya, "rol": rol})
     if resp.status_code == 201:
         print("Usuario registrado correctamente.")
     else:
         print("Error:", resp.json())
 
 def login():
+    global token
     nombre = input("Nombre de usuario: ")
     contrasenya = input("Contraseña: ")
-    resp = requests.post(f"{API_URL}/login", json={"nombre": nombre, "contrasenya": contrasenya})
-    if resp.status_code == 200:
-        set_token(resp.json()["access_token"])
-        print("Login correcto!")
-    else:
-        print("Error:", resp.json())
 
-def listar_inmuebles():
-    resp = requests.get(f"{API_URL}/inmuebles", headers=get_headers())
+    response = requests.post(f"{BASE_URL}/login", json={"nombre": nombre, "contrasenya": contrasenya})
+
+    if response.status_code == 200:
+        token = response.json()['access_token']
+        print("Login exitoso. Token guardado.")
+    else:
+        print("Error en login:", response.json())
+
+
+def ver_inmuebles():
+    resp = requests.get(f"{BASE_URL}/inmuebles")
     if resp.status_code == 200:
         inmuebles = resp.json()
         for i, inmueble in enumerate(inmuebles, 1):
-            print(f"Inmueble {i}: {inmueble.get('nombre', 'Sin nombre')} - Precio: {inmueble.get('precio', 'N/A')} €")
+            print(f"{i}. {inmueble['nombre']} - {inmueble['precio']}€ - Zona: {inmueble['zona']} - Dueño: {inmueble['duenyo']}")
     else:
-        print("Error:", resp.json())
+        print("Error al obtener inmuebles:", resp.text)
 
-def buscar_inmueble_id():
-    id_inmueble = input("ID del inmueble: ")
-    resp = requests.get(f"{API_URL}/inmuebles/{id_inmueble}", headers=get_headers())
+
+def ver_inmueble_por_id():
+    if not token:
+        print("Debes hacer login primero")
+        return
+    id = input("ID del inmueble: ")
+    headers = {'Authorization': f'Bearer {token}'}
+    resp = requests.get(f"{BASE_URL}/inmuebles/{id}", headers=headers)
     if resp.status_code == 200:
         inmueble = resp.json()
-        print(inmueble)
+        print("Detalles inmueble:")
+        for k, v in inmueble.items():
+            print(f"  {k}: {v}")
     else:
-        print("Error:", resp.json())
+        print("Error:", resp.text)
+
 
 def añadir_inmueble():
-    print("Introduce datos del inmueble:")
-    tipo = input("Tipo (piso / vivienda_unifamiliar): ")
+    if not token:
+        print("Debes hacer login primero")
+        return
+    headers = {'Authorization': f'Bearer {token}'}
+    tipo = input("Tipo (piso/vivienda_unifamiliar): ").strip()
     nombre = input("Nombre: ")
     descripcion = input("Descripción: ")
     precio = float(input("Precio: "))
-    zona = input("Zona (clave): ")
-    duenyo = input("Nombre del dueño: ")
+    zona = input("Zona: ")
+    duenyo = input("Dueño (nombre): ")
 
+    # Para simplicidad, habitaciones mínimas
     habitaciones = []
-    n_habs = int(input("Número de habitaciones: "))
-    for i in range(n_habs):
-        print(f"Datos habitación {i+1}:")
-        tipo_hab = input("  Tipo (dormitorio, cocina, banyo, salon): ")
+    n_hab = int(input("Número de habitaciones: "))
+    for _ in range(n_hab):
+        tipo_hab = input("  Tipo habitación (dormitorio/cocina/banyo/salon): ")
         superficie = float(input("  Superficie: "))
-        hab_data = {"tipo": tipo_hab, "superficie": superficie}
-        habitaciones.append(hab_data)
-
-    planta = None
-    ascensor = False
-    tiene_piscina = False
-    jardin = None
-
-    if tipo == "piso":
-        planta = int(input("Planta: "))
-        ascensor = input("¿Tiene ascensor? (s/n): ").lower() == 's'
-    elif tipo == "vivienda_unifamiliar":
-        tiene_piscina = input("¿Tiene piscina? (s/n): ").lower() == 's'
+        hab = {"tipo": tipo_hab, "superficie": superficie}
+        habitaciones.append(hab)
 
     datos = {
         "tipo": tipo,
@@ -87,136 +91,63 @@ def añadir_inmueble():
         "precio": precio,
         "zona": zona,
         "duenyo": duenyo,
-        "habitaciones": habitaciones
+        "habitaciones": habitaciones,
     }
-    if planta is not None:
+    if tipo == "piso":
+        planta = int(input("Planta: "))
+        ascensor = input("Ascensor (True/False): ").lower() == "true"
         datos["planta"] = planta
-    if ascensor:
         datos["ascensor"] = ascensor
-    if tiene_piscina:
+    elif tipo == "vivienda_unifamiliar":
+        tiene_piscina = input("Tiene piscina (True/False): ").lower() == "true"
         datos["tiene_piscina"] = tiene_piscina
-    if jardin:
-        datos["jardin"] = jardin
+        datos["jardin"] = None  # Por simplicidad
 
-    resp = requests.post(f"{API_URL}/inmuebles", json=datos, headers=get_headers())
-    if resp.status_code in [200, 201]:
+    resp = requests.post(f"{BASE_URL}/inmuebles", json=datos, headers=headers)
+    if resp.status_code == 201:
         print("Inmueble añadido correctamente.")
     else:
-        print("Error:", resp.json())
+        print("Error al añadir inmueble:", resp.text)
 
-def actualizar_inmueble():
-    id_inmueble = input("ID del inmueble a actualizar: ")
-    print("Introduce los campos a actualizar (deja vacío para no cambiar):")
-    nombre = input("Nuevo nombre: ")
-    descripcion = input("Nueva descripción: ")
-    precio = input("Nuevo precio: ")
-    zona = input("Nueva zona (clave): ")
-
-    datos = {}
-    if nombre:
-        datos["nombre"] = nombre
-    if descripcion:
-        datos["descripcion"] = descripcion
-    if precio:
-        datos["precio"] = float(precio)
-    if zona:
-        datos["zona"] = zona
-
-    if not datos:
-        print("No hay datos para actualizar.")
-        return
-
-    resp = requests.put(f"{API_URL}/inmuebles/{id_inmueble}", json=datos, headers=get_headers())
-    if resp.status_code == 200:
-        print("Inmueble actualizado correctamente.")
-    else:
-        print("Error:", resp.json())
 
 def eliminar_inmueble():
-    id_inmueble = input("ID del inmueble a eliminar: ")
-    resp = requests.delete(f"{API_URL}/inmuebles/{id_inmueble}", headers=get_headers())
+    if not token:
+        print("Debes hacer login primero")
+        return
+    id = input("ID del inmueble a eliminar: ")
+    headers = {'Authorization': f'Bearer {token}'}
+    resp = requests.delete(f"{BASE_URL}/inmuebles/{id}", headers=headers)
     if resp.status_code == 200:
-        print("Inmueble eliminado correctamente.")
+        print("Inmueble eliminado.")
     else:
-        print("Error:", resp.json())
-
-def escribir_comentario():
-    id_inmueble = input("ID del inmueble: ")
-    comentario = input("Comentario: ")
-    resp = requests.post(f"{API_URL}/inmueble/{id_inmueble}/escribir", json={"comentario": comentario})
-    if resp.status_code == 200:
-        print("Comentario agregado con éxito.")
-    else:
-        print("Error:", resp.json())
-
-def mostrar_comentarios():
-    id_inmueble = input("ID del inmueble: ")
-    resp = requests.get(f"{API_URL}/inmueble/{id_inmueble}/comentarios")
-    if resp.status_code == 200:
-        comentarios = resp.json()
-        print("Comentarios:")
-        for c in comentarios.get("comentarios_usuario", []):
-            print(f" - {c['comentario']}")
-    else:
-        print("Error:", resp.json())
-
-def obtener_descripcion(inmueble_id: int):
-    try:
-        response = requests.get(f"{API_URL}/inmueble/{inmueble_id}/descripcion")
-        if response.status_code == 200:
-            print("\n Descripción generada:")
-            print(response.json()["descripcion"])
-        else:
-            print(f"\nError {response.status_code}: {response.json().get('error', 'Desconocido')}")
-    except requests.exceptions.ConnectionError:
-        print("\nNo se pudo conectar con la API. ¿Está corriendo Flask?")
+        print("Error:", resp.text)
 
 
 def menu():
     while True:
         print("\n--- Menú API Inmuebles ---")
-        print("1. Registrar usuario")
-        print("2. Iniciar sesión")
-        print("3. Listar inmuebles")
-        print("4. Buscar inmueble por ID")
-        print("5. Añadir inmueble")
-        print("6. Actualizar inmueble")
-        print("7. Eliminar inmueble")
-        print("8. Escribir comentario")
-        print("9. Mostrar comentarios")
-        print("10. Descripción del inmueble")
-        print("11. Salir")
+        print("1. Login")
+        print("2. Ver todos los inmuebles")
+        print("3. Ver inmueble por ID (admin sólo)")
+        print("4. Añadir inmueble")
+        print("5. Eliminar inmueble")
+        print("6. Salir")
         opcion = input("Elige una opción: ")
 
         if opcion == "1":
-            registrar()
-        elif opcion == "2":
             login()
+        elif opcion == "2":
+            ver_inmuebles()
         elif opcion == "3":
-            listar_inmuebles()
+            ver_inmueble_por_id()
         elif opcion == "4":
-            buscar_inmueble_id()
-        elif opcion == "5":
             añadir_inmueble()
-        elif opcion == "6":
-            actualizar_inmueble()
-        elif opcion == "7":
+        elif opcion == "5":
             eliminar_inmueble()
-        elif opcion == "8":
-            escribir_comentario()
-        elif opcion == "9":
-            mostrar_comentarios()
-        elif opcion=="10":
-            try:
-                inmueble_id = int(input("Introduce el ID del inmueble: "))
-                obtener_descripcion(inmueble_id)
-            except ValueError:
-                print("ID inválido. Debe ser un número.")
-        elif opcion == "11":
-            print("Saliendo...")
+        elif opcion == "6":
             break
         else:
-            print("Opción no válida.")
+            print("Opción no válida")
 
 if __name__ == "__main__":
     menu()
