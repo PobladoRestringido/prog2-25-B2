@@ -97,7 +97,7 @@ def ver_inmueble_por_id(id) -> dict | str:
 
     print(f"ID:       {inmueble.get('id')}")
     print(f"Dirección:{inmueble.get('direccion', '—')}")
-    print(f"Precio:   {inmueble.get('precio', '—')}")
+    print(f"Precio de venta:   {inmueble.get('precio de venta', '—')}")
 
     direccion = inmueble.get('direccion') or inmueble.get('zona', '')
     if direccion:
@@ -214,9 +214,13 @@ def ver_comentarios_inmueble() -> str:
     response = requests.get(f"{BASE_URL}inmueble/{inmueble_id}/comentarios")
 
     if response.status_code == 200:
-        return response.json()  # Devuelve los comentarios como un diccionario o lista de comentarios.
-    else:
-        return "Inmueble no encontrado"
+        comentarioa = responde.json
+        if comentarios:
+            for i in comentarios:
+                print(f"- {i}") # Devuelve los comentarios como un diccionario o lista de comentarios.
+        else:
+            print("No hay comentarios disponibles")
+        return "Comentarios mostrados"
 
 
 def escribir_comentario() -> str:
@@ -328,6 +332,15 @@ def anyadir_inmueble() -> str:
 
 
 def actualizar_inmueble() -> str:
+    inmueble_id: str = input("Introduce el ID del inmueble a actualizar: ")
+    resp_get = requests.get(f"{BASE_URL}inmuebles")
+    if resp_get.status_code != 200:
+        return "Error al obtener la lista de inmuebles."
+
+    inmuebles = [str(i.get('id')) for i in resp_get.json()]
+    if inmueble_id not in inmuebles:
+        return f"Error: No se encuentra un inmueble con ID {inmueble_id}."
+
     """
     Solicita datos al usuario para actualizar un inmueble existente y envía la solicitud a la API.
 
@@ -362,6 +375,9 @@ def actualizar_inmueble() -> str:
         return "Error: El campo 'habitaciones' debe ser un número entero."
 
     zona: str = input("Introduce la nueva zona: ")
+    direccion = input("introduce la dirección: ")
+    if not direccion:
+        return "Error: la zona no puede estar vacía"
 
     precio_venta: str = input("Introduce el nuevo precio de venta: ")
     try:
@@ -379,6 +395,7 @@ def actualizar_inmueble() -> str:
         'dueño': dueño,
         'habitaciones': int(habitaciones),
         'zona': zona,
+        'direccion': direccion,
         'precio de venta': precio_venta_float,
         'precio de alquiler/por mes': precio_alquiler_float
     }
@@ -465,7 +482,7 @@ def main()-> None:
         elif opcion == 5:
             ver_comentarios_inmueble()
         elif opcion == 6:
-            escribir_comentario()  # Nueva opción
+            print(escribir_comentario())  # Nueva opción
         elif opcion == 7:
             print(anyadir_inmueble())
         elif opcion == 8:
