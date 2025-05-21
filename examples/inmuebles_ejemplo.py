@@ -104,7 +104,7 @@ piso3 = Piso(
     descripcion="Ideal para familias con niños",
     habitaciones=habitaciones_piso3,
     precio=165000,
-    zona=zonas["oeste_madrid"],
+    zona=zonas["casco_toledo"],
     duenyo=vendedores[4],
     planta=2,
     ascensor=True
@@ -114,7 +114,7 @@ piso4 = Piso(
     descripcion="Perfecto para parejas jóvenes",
     habitaciones=habitaciones_piso4,
     precio=195000,
-    zona=zonas["este_madrid"],
+    zona=zonas["rural_asturias"],
     duenyo=vendedores[1],
     planta=4,
     ascensor=True
@@ -148,7 +148,7 @@ casa2 = ViviendaUnifamiliar(
     precio=420000,
     nombre="Chalet Tranquilo",
     habitaciones=habitaciones_casa2,
-    zona=zonas["este_madrid"],
+    zona=zonas["residencial_sevilla"],
     tiene_piscina=False,
     jardin="Pequeño jardín delantero"
 )
@@ -194,21 +194,14 @@ zonas["norte_madrid"].agregar_inmueble(casa3)
 
 zonas["sur_madrid"].agregar_inmueble(piso2)
 zonas["sur_madrid"].agregar_inmueble(piso5)
-zonas["sur_madrid"].agregar_inmueble(casa4)
+zonas["rural_asturias"].agregar_inmueble(casa4)
 
-zonas["este_madrid"].agregar_inmueble(piso4)
-zonas["este_madrid"].agregar_inmueble(casa2)
+zonas["rural_asturias"].agregar_inmueble(piso4)
+zonas["residencial_sevilla"].agregar_inmueble(casa2)
 
-zonas["oeste_madrid"].agregar_inmueble(piso3)
+zonas["casco_toledo"].agregar_inmueble(piso3)
 
 # Lista de inmuebles para trabajar
 inmuebles = [piso1, casa1, piso2, casa2, piso3, casa3, piso4, casa4, piso5, casa5]
 
-for i, inmueble in enumerate(inmuebles, 1):
-    print(f"Inmueble {i}: {inmueble.nombre} - Precio: {inmueble.precio} € - Zona: {inmueble.zona.nombre}")
-    print(f"Dueño: {inmueble.duenyo.nombre}")
-    print("Habitaciones:")
-    for hab in inmueble.habitaciones:
-        print(f" - {hab}")
-    print()
 
