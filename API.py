@@ -334,7 +334,8 @@ def crear_publicacion() -> tuple[Response, int]:"""
                                      'datos'}), 400
     """
 
-@app.route('/inmuebles/<int:id>', methods=['POST'])
+
+@app.route('/inmuebles', methods=['POST'])
 @jwt_required()
 def crear_inmueble() -> tuple[Response, int]:
     """
@@ -342,121 +343,77 @@ def crear_inmueble() -> tuple[Response, int]:
 
     Parámetros
     ----------
-    habitaciones : list[Habitacion]
-        Lista de las habitaciones que conforman el inmueble.
-    zona : Optional[str]
+    - habitaciones : list[dict]
+        Lista de habitaciones que conforman el inmueble.
+        Cada habitación debe ser un diccionario con la clave 'superficie',
+        'tipo' y claves adicionales en función del tipo, correspondientes a
+        los atributos del mismo (ver ``modelos_datos/modelo_relacional.sql``).
+    - zona : Optional[str]
         Zona geográfica en la que se encuentra el inmueble.
 
     Devuelve
     -----------
     tuple[Response, int]:
-        Representación del inmueble junto con HTTP 200 si la creación
-        fue exitosa.
-        En caso contrario, se devolverá un mensaje de error y HTTP 4XX.
+        - JSON con la representación del inmueble y HTTP 201 si la creación
+          fue exitosa.
+        - JSON con mensaje de error y código HTTP 4XX/5XX en caso de fallo.
     """
-
     # Verificamos los permisos del usuario.
     rol = get_jwt().get('rol').lower()
-    if rol != 'administrador' and rol != 'vendedor':
-        return (jsonify({"error": "Sólo vendedores o admin pueden añadir "
-                                  "nuevos inmuebles"}), 403)
+    if rol not in ['administrador',
+                   'vendedor']:
+        return jsonify({"error": "Sólo vendedores o admin pueden añadir "
+                                 "nuevos inmuebles"}), 403
 
-    # Extraemos la `data` del request.
+    # Extraemos la data del request.
     data = request.get_json()
     lista_habitaciones = data.get('habitaciones')
     zona = data.get('zona')
 
-    # Verificamos que se haya proporcionado toda la información adecuada.
+    # Verificamos que se haya proporcionado la información necesaria.
     if not lista_habitaciones:
         return jsonify({'error': 'Faltan parámetros'}), 400
 
-    # Añadimos el inmueble a la base de datos
-    with sqlite3.connect('base_datos/base_datos.db') as conn:
-        #conn.row_factory = sqlite3.Row  # esto hace que las filas de la
-        # db se extraigan directamente como diccionarios.
-        cursor = conn.cursor()
+    # Determinamos el dueño.
+    owner = get_jwt_identity()
 
-        cursor.execute('INSERT INTO Inmueble VALUES = () ?',
-                             (inmueble_usuario['id'],))
-        inmueble_db = cursor.fetchone()
+    try:
+        with sqlite3.connect('base_datos/base_datos.db') as conn:
+            cursor = conn.cursor()
 
-        if inmueble_db is None:
-            return jsonify({'error': 'El inmueble que se ha intentado '
-                                     'publicar no existe en la base de '
-                                     'datos'}), 400
+            # Insertamos el inmueble especificando las columnas.
+            # CHANGE: Se corrige la sintaxis y se incluye el nombre del propietario.
+            cursor.execute("""
+                INSERT INTO Inmueble (zona, nombre_propietario)
+                VALUES (?, ?)
+            """, (zona, owner))
 
-        """# Buscar la zona
-        nombre_zona = datos['zona']
-        if nombre_zona in zonas:
-            zona = zonas[nombre_zona]
-        else:
-            return jsonify({'error': 'Zona no encontrada'}), 400
-        """
-        """
-        # Buscar el dueño
-        duenyo = None
-        for vendedor in vendedores:
-            if vendedor.nombre == datos['duenyo']:
-                duenyo = vendedor
-                break
-        if duenyo is None:
-            return jsonify({'error': 'Dueño no encontrado'}), 400
-        """
-        # Crear lista de habitaciones
-        habitaciones_obj = []
-        for hab in datos['habitaciones']:
-            tipo_hab = hab['tipo']
-            superficie = hab['superficie']
+            # Obtenemos el id del inmueble recién insertado.
+            inmueble_id = cursor.lastrowid
 
-            if tipo_hab == 'dormitorio':
-                habitaciones_obj.append(Dormitorio(superficie, hab.get('tiene_cama', False),
-                                                   hab.get('tiene_lampara', False),
-                                                   hab.get('tiene_mesa_estudio', False)))
-            elif tipo_hab == 'cocina':
-                habitaciones_obj.append(Cocina(superficie, hab.get('tiene_frigorifico', False),
-                                               hab.get('tiene_horno', False),
-                                               hab.get('tiene_microondas', False),
-                                               hab.get('tiene_fregadero', False),
-                                               hab.get('tiene_mesa', False)))
-            elif tipo_hab == 'banyo':
-                habitaciones_obj.append(Banyo(superficie, hab.get('tiene_ducha', False),
-                                              hab.get('tiene_banyera', False),
-                                              hab.get('tiene_vater', False),
-                                              hab.get('tiene_lavabo', True)))
-            elif tipo_hab == 'salon':
-                habitaciones_obj.append(Salon(superficie, hab.get('tiene_televisor', False),
-                                              hab.get('tiene_sofa', False),
-                                              hab.get('tiene_mesa_recreativa', False)))
-            else:
-                return jsonify({'error': 'Tipo de habitación no reconocido'}), 400
+            # Insertamos cada una de las habitaciones vinculadas a este inmueble.
+            for i, hab in enumerate(lista_habitaciones,
+                                    start=1):
+                superficie = hab.get('superficie')
+                if superficie is None:
+                    return jsonify({
+                                       'error': 'Falta la superficie en una habitación'}), 400
+                cursor.execute("""
+                    INSERT INTO Habitacion (id, id_inmueble, superficie)
+                    VALUES (?, ?, ?)
+                """, (i, inmueble_id, superficie))
 
-        # Crear el inmueble
-        if tipo == 'piso':
-            planta = datos.get('planta')
-            ascensor = datos.get('ascensor', False)
-            inmueble = Piso(datos['nombre'], habitaciones_obj, zona, datos['descripcion'], datos['precio'],
-                            duenyo, planta, ascensor)
-        elif tipo == 'vivienda_unifamiliar':
-            piscina = datos.get('tiene_piscina', False)
-            jardin = datos.get('jardin')
-            inmueble = ViviendaUnifamiliar(duenyo, datos['descripcion'], datos['precio'], datos['nombre'],
-                                           habitaciones_obj, zona, piscina, jardin)
-        else:
-            return jsonify({'error': 'Tipo de inmueble no válido'}), 400
+            conn.commit() 
+    except sqlite3.Error as e:
+        return jsonify({'error': f'Error en la base de datos: {str(e)}'}), 500
 
-        # Guardar el inmueble
-        inmuebles.append(inmueble)
-        zona.agregar_inmueble(inmueble)
+    # Preparamos la respuesta con la información del nuevo inmueble.
+    nuevo_inmueble = {"id": inmueble_id, "zona": zona,
+        "nombre_propietario": owner, "habitaciones": lista_habitaciones}
 
-        return jsonify({
-            'mensaje': 'Inmueble añadido correctamente',
-            'inmueble': inmueble.to_dict()
-        }), 201
+    return jsonify({'mensaje': 'Inmueble añadido correctamente',
+        'inmueble': nuevo_inmueble}), 201
 
-
-'''
-SQL
-'''
 @app.route('/inmuebles/<int:id>', methods=['PUT'])
 @jwt_required()
 def actualizar_inmueble(id: int):
