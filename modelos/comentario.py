@@ -30,3 +30,40 @@ class Comentario:
         self.__contenido = contenido
         self.__autor = autor
         self.__fecha_publicacion = fecha_publicacion
+
+    @property
+    def contenido(self) -> str:
+        """Devuelve el texto del comentario"""
+        return self.__contenido
+
+    @contenido.setter
+    def contenido(self, nuevo_contenido: str) -> None:
+        """Permite actualizar el texto del comentario"""
+        if not nuevo_contenido:
+            raise ValueError("El contenidoo del comentario no puede estar vacío")
+        self.__contenido = nuevo_contenido
+
+    @property
+    def autor(self) -> Comprador:
+        """Devuelve el comprador que hizo el comentario"""
+        return self.__autor
+
+    @autor.setter
+    def autor(self, nuevo_autor: Comprador) -> None:
+        """Permite cambiar el autor del comentario"""
+        if not isinstance(nuevo_autor, Comprador):
+            raise TypeError("El autor debe ser una instancia de comprador")
+        self.__autor = nuevo_autor
+
+    @property
+    def fecha_publicacion(self) -> str:
+        """Devuelve la fecha en que se publicó el comentario"""
+        return self.__fecha_publicacion
+
+    @fecha_publicacion.setter
+    def fecha_publicacion(self, nueva_fecha: str) -> None:
+        """Permite cambiar la fecha de publicación"""
+        self.__fecha_publicacion = nueva_fecha
+
+    def __repr__(self) -> str:
+        return (f"Comentario('{self.contenido}', autor={self.autor.nombre}, fecha_publicacion='{self.fecha_publicacion}')")

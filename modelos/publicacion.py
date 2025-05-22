@@ -55,3 +55,51 @@ class Publicacion:
         self.__vendido = vendido
         self.comentarios = comentarios
         self.tipo_alquiler = tipo_alquiler
+
+    @property
+    def inmueble(self) -> Inmueble:
+        return self.__inmueble
+
+    @inmueble.setter
+    def inmueble(self, nuevo_inmueble : Inmueble) -> None:
+        if not isinstance(nuevo_inmueble, Inmueble):
+            raise TypeError("El inmueble debe ser una instancia de Inmueble")
+        self.__inmueble = nuevo_inmueble
+
+    @property
+    def precio(self) -> float:
+        return self.__precio
+
+    @precio.setter
+    def precio(self, nuevo_precio: float) -> None:
+        if nuevo_precio <= 0:
+            raise ValueError("El precio debe ser positivo")
+        self.__precio = nuevo_precio
+
+    @property
+    def vendedor(self) -> Vendedor:
+        return self.__vendedor
+
+    @vendedor.setter
+    def vendedor(self, nuevo_vendedor: Vendedor) -> None:
+        if not isinstance(nuevo_vendedor, Vendedor):
+            raise TypeError("El vendedor debe ser una instancia de Vendedor")
+        self.__vendedor = nuevo_vendedor
+
+    @property
+    def fecha_publicacion(self) -> str:
+        return self.__fecha_publicacion
+
+    @fecha_publicacion.setter
+    def fecha_publicacion(self, nueva_fecha: str) -> None:
+        self.__fecha_publicacion = nueva_fecha
+
+    @property
+    def vendido(self) -> bool:
+        return self.__vendido
+
+    @vendido.setter
+    def vendido(self, estado: bool) -> None:
+        if not isinstance(estado, bool):
+            raise TypeError("El estado debe ser booleano")
+        self.__vendido = estado
