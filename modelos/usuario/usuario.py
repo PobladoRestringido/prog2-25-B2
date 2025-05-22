@@ -38,7 +38,7 @@ class Usuario:
         pickling).
     """
 
-    def __init__(self, nombre: str, contrasenya: str,rol:str):
+    def __init__(self, nombre: str, contrasenya: str,rol:str, contrasenya_en_hash=False):
         """
         Inicializa una nueva instancia de Usuario.
 
@@ -54,8 +54,11 @@ class Usuario:
         if not contrasenya:
             raise ContrasenyaInvalidaError("La contraseña no puede estar vacía", field="contrasenya", value=contrasenya)
         self.__nombre = nombre
-        self.__contrasenya = self._encriptar_contrasenya(contrasenya)
         self.__rol= rol
+        if contrasenya_en_hash:
+            self.__contrasenya = contrasenya
+        else:
+            self.__contrasenya = self._encriptar_contrasenya(contrasenya)
 
     @property
     def nombre(self):
@@ -134,5 +137,5 @@ class Usuario:
 usuarios = {
     "ana": Usuario("ana", "1234", "comprador"),
     "jose": Usuario("jose", "abcd", "vendedor"),
-    "admin": Usuario("admin", "admin", "admin")
+    "admin": Usuario("admin", "admin", "administrador")
 }
