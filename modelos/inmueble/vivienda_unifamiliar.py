@@ -13,7 +13,7 @@ class ViviendaUnifamiliar(Inmueble):
         Objeto que representa el jardín de la vivienda, si tiene.
     """
 
-    def __init__(self, duenyo: 'Persona', descripcion:str,precio:float,nombre:str,habitaciones : list['Habitacion', ...], zona : 'ZonaGeografica',
+    def __init__(self, duenyo: 'Persona', descripcion:str,precio:float,nombre:str,direccion:str,habitaciones : list['Habitacion', ...], zona : 'ZonaGeografica',
                  tiene_piscina : bool = False, jardin : Optional['Jardin'] = None) -> None:
         """
         Inicializa una nueva instancia de ViviendaUnifamiliar.
@@ -34,6 +34,7 @@ class ViviendaUnifamiliar(Inmueble):
         super().__init__(duenyo,habitaciones,zona,nombre,descripcion,precio)
         self.__tiene_piscina = tiene_piscina
         self.__jardin = jardin
+        self.direccion = direccion
 
     def tipo(self) -> str:
         return "vivienda unifamiliar"

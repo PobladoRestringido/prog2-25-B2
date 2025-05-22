@@ -8,27 +8,24 @@ from modelos.habitacion.dormitorio import Dormitorio
 from modelos.habitacion.cocina import Cocina
 from modelos.habitacion.banyo import Banyo
 from modelos.habitacion.salon import Salon
+from modelos.usuario.usuario import usuarios
+from modelos.usuario.usuario import Usuario
+import random
 
 from examples.inmuebles_ejemplo import inmuebles
 from examples.vendedor_ejemplo import vendedores
 from examples.Zonas_ejemplo import zonas
 
-from serializacion.pickling import cargar_data
 
-import random
-from datetime import datetime
-# para guardar la fecha de creación de Publicaciones y Comentarios.
 
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
-import sqlite3
-# from openai import OpenAI
-import time
+
 
 app = Flask(__name__) #Creamos la aplicación Flask
 app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
 jwt = JWTManager(app)
-usuarios_registrados = []
+usuarios_registrados = list(usuarios.values())
 
 @app.route('/') #Ruta inicial de la api
 def casa():
@@ -36,385 +33,145 @@ def casa():
        Función de inicio de la API. Esta función maneja la ruta raíz y
        devuelve un mensaje de bienvenida.
 
-       Devuélve
+       Devuelve
        --------------
         -str: Un mensaje de texto dando la bienvenida a la API.
     """
     return 'Bienvenido a la API de inmuebles'
 
-# inicio sesión
-@app.route('/login', methods=['POST'])
-def iniciar_sesion() -> tuple[Response, int]:
-    """
-    Verifica las credenciales de un usuario para iniciar sesión.
-
-    Parámetros
-    ----------
-    - nombre: str
-        Nombre de usuario.
-    - contrasenya: str
-        Clave secreta del usuario.
-
-    Retorna
-    -------
-    - JSON con la representación del usuario y HTTP 200 si el log-in es
-      correcto.
-    - JSON con un mensaje de error y HTTP 401 si el log-in falla.
-    - JSON con un mensaje de error y HTTP 400 si faltan las credenciales.
-    """
-    data = request.get_json()
-    nombre = data.get('nombre')
-    contrasenya = data.get('contrasenya')
-
-    # Verifica que se hayan proporcionado los campos requeridos.
-    if not nombre or not contrasenya:
-        return jsonify({"error": "Faltan credenciales."}), 400
-
-    # Intentamos conectarnos a la base de datos.
-    try:
-        with sqlite3.connect('base_datos/base_datos.db') as conn:
-            conn.row_factory = sqlite3.Row  # Se extraen las filas como diccionarios.
-            cursor = conn.cursor()
-
-            # Ejecutamos la consulta dentro de un bloque try/except
-            try:
-                cursor.execute("""
-                    SELECT u.nombre, u.contrasenya,
-                           CASE
-                               WHEN c.nombre IS NOT NULL THEN 'Comprador'
-                               WHEN v.nombre IS NOT NULL THEN 'Vendedor'
-                               WHEN a.nombre IS NOT NULL THEN 'Administrador'
-                               ELSE 'Sin rol'
-                           END AS rol
-                    FROM Usuario u
-                    LEFT JOIN Comprador c ON u.nombre = c.nombre
-                    LEFT JOIN Vendedor v ON u.nombre = v.nombre
-                    LEFT JOIN Administrador a ON u.nombre = a.nombre
-                    WHERE u.nombre = ?
-                """, (nombre,))
-            except sqlite3.Error as exec_err:
-                return jsonify({
-                    "error": "Error al ejecutar la consulta en la base de datos.",
-                    "message": str(exec_err)
-                }), 500
-
-            db_row = cursor.fetchone()
-
-    except sqlite3.Error as conn_err:
-        return jsonify({
-            "error": "Error al conectar con la base de datos.",
-            "message": str(conn_err)
-        }), 500
-
-    # Comprobamos que el usuario existe.
-    if db_row is None:
-        return jsonify({'error': 'El nombre de usuario no existe.'}), 400
-
-    # Comprobamos que la contraseña es correcta.
-    elif db_row['contrasenya'] != contrasenya:
-        return jsonify({'error': 'La contraseña proporcionada es incorrecta.'}), 400
-
-    # Si las credenciales son correctas, devolvemos el token de acceso.
-    else:
-        access_token = create_access_token(identity=nombre,
-                                           additional_claims={"rol": db_row['rol']})
-        return jsonify({"access_token": access_token}), 200
-
+#Funcion implementada por Sama
 @app.route('/register', methods=['POST'])
-def registrar_usuario() -> tuple[Response, int]:
+def registrar_usuario():
     """
-    Método que registra un nuevo usuario si el nombre no está ya en uso.
+    Registra un nuevo usuario si el nombre no está en uso.
 
-    Parámetros
-    ----------
-    nombre : str
-        nombre de usuario único.
-    contrasenya : str
-        contraseña encriptada.
-    rol : str
-        tipo de usuario (comprador, vendedor, administrador).
+    Parámetros JSON esperados:
+    - nombre: str
+    - contrasenya: str
+    - rol: str (por ejemplo: 'comprador', 'vendedor', 'administrador')
 
-    Retorna
-    -------
-    tuple[Response, int]
-        JSON con la representación del usuario y el código HTTP
-        correspondiente.
+    Retorna:
+    - JSON con info del usuario y 201 si es exitoso
+    - JSON con error y 409 si el nombre ya existe
+    - JSON con error y 400 si falta algún dato o rol inválido
     """
 
-    # primero extraemos la data del json.
     data = request.get_json()
     nombre = data.get('nombre')
     contrasenya = data.get('contrasenya')
     rol = data.get('rol')
 
-    # a continuación validamos la entrada.
     if not nombre or not contrasenya or not rol:
-        return jsonify({'error': 'Faltan credenciales.'}), 400
+        return jsonify({'error': 'Faltan campos obligatorios (nombre, contrasenya, rol)'}), 400
 
-    if rol not in ('comprador', 'vendedor', 'administrador'):
-        return jsonify({'error': 'Tipo usuario no válido.'}), 400
+    # Verificar que no exista ya un usuario con ese nombre
+    for usuario in usuarios_registrados:
+        if usuario.nombre == nombre:
+            return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 409
 
-    # Conectar a la base de datos.
-    with sqlite3.connect('base_datos/base_datos.db') as conn:
-        cursor = conn.cursor()
+    # Crear el usuario según rol
+    if rol == "comprador":
+        nuevo_usuario = Comprador(nombre, contrasenya)
+    elif rol == "vendedor":
+        nuevo_usuario = Vendedor(nombre, contrasenya)
+    elif rol == "administrador":
+        nuevo_usuario = Administrador(nombre, contrasenya)
+    else:
+        return jsonify({'error': f"Rol '{rol}' no válido."}), 400
 
-        # Verificar que el usuario no exista ya.
-        cursor.execute("SELECT nombre FROM Usuario WHERE nombre = ?",(nombre,))
-        if cursor.fetchone() is not None:
-            return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 400
+    # Añadir el nuevo usuario a la lista de registrados
+    usuarios_registrados.append(nuevo_usuario)
 
-        # Llegados a este punto las creedenciales son válidas, por lo que
-        # insertamos al nuevo usuario en la DB.
-        try:
-            cursor.execute(
-                "INSERT INTO Usuario (nombre, contrasenya) VALUES (?, ?)",
-                (nombre, contrasenya)
+    return jsonify({'mensaje': 'Usuario registrado correctamente', 'usuario': nuevo_usuario.to_dict()}), 201
+
+
+#Funcion implementada por Sama
+@app.route('/perfil', methods=['GET'])
+@jwt_required()
+def perfil():
+    identidad = get_jwt_identity()
+    return jsonify(logged_in_as=identidad), 200
+
+
+
+"""
+Los usuarios se guardarán y cargarán en usuarios.json con funciones que leen y escriben en JSON.
+Usaremos el método to_dict() de la clase Usuario para guardar el hash de la contraseña.
+Cada vez que se registra un usuario, se actualiza el archivo en disco
+El login usa los usuarios cargados del archivo.
+
+"""
+
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    contrasenya = data.get('contrasenya')
+
+    if not nombre or not contrasenya:
+        return jsonify({"error": "Faltan credenciales."}), 400
+
+    for usuario in usuarios_registrados:
+        if usuario.nombre == nombre and usuario.verificar_contrasenya(contrasenya):
+            access_token = create_access_token(
+                identity=usuario.nombre,
+                additional_claims={"rol": usuario.rol}
             )
+            return jsonify({"access_token": access_token}), 200
 
-            # Insertar en la tabla correspondiente según el ``rol``.
-            if rol == "comprador":
-                cursor.execute("INSERT INTO Comprador (nombre) VALUES (?)",
-                               (nombre,))
-            elif rol == "vendedor":
-                cursor.execute("INSERT INTO Vendedor (nombre) VALUES (?)",
-                               (nombre,))
-            elif rol == "administrador":
-                cursor.execute("INSERT INTO Administrador (nombre) VALUES (?)",
-                               (nombre,))
-            conn.commit()
-
-        except Exception as e:
-            conn.rollback()
-            conn.close()
-            return jsonify({'error': str(e)}), 500
-
-    # Finalmente, creamos y devolvemos la representación json del usuario
-    # creado.
-    usuario = Comprador(nombre, contrasenya) if (rol ==
-                                                 'comprador') else (
-        Vendedor(nombre, contrasenya)) if rol == 'vendedor' else (
-        Administrador(nombre, contrasenya))
-
-    access_token = create_access_token(
-        identity=usuario.nombre,
-        additional_claims={"rol": usuario.rol}
-    )
-
-    return jsonify({'usuario': usuario.to_dict(), 'access_token': access_token}), 201
-
+    return jsonify({"error": "Nombre de usuario o contraseña incorrectos."}), 401
 
 @app.route('/inmuebles', methods=['GET'])
-def get_inmuebles() -> tuple[Response, int]:
+def ver_inmuebles():
     """
-    Función que obtiene y devuelve la lista de todos los inmuebles registrados.
-
-    Returna
-    -------
-    tuple[Response, int]
-        JSON con la lista de inmuebles (como diccionarios) y HTTP 200 si la
-        operación fue correcta.
-        Si hubo algún error durante la conexión a la base de
-        datos, devuelve HTTP 500.
+    Devuelve información detallada de todos los inmuebles
     """
-    try:
-        with sqlite3.connect('base_datos/base_datos.db') as conn:
-            cursor = conn.cursor()
+    resultado = []
 
-            conn.row_factory = sqlite3.Row # esta línea hace que las filas
-            # de la base de datos se extraigan como diccionarios. Por
-            # defecto serían tuplas.
+    for i, inmueble in enumerate(inmuebles, 1):
+        inmueble_info = {
+            "numero": i,
+            "nombre": inmueble.nombre,
+            "precio": inmueble.precio,
+            "zona": inmueble.zona.nombre,
+            "duenyo": inmueble.duenyo.nombre,
+            "direccion": inmueble.direccion,
+            "habitaciones": [str(h) for h in inmueble.habitaciones]  # asumiendo que son objetos
+        }
+        resultado.append(inmueble_info)
 
-            # Extraemos los inmuebles de la base de datos
-            inmuebles_list = cursor.execute("SELECT * FROM Inmueble").fetchall()
+    return jsonify(resultado), 200
 
-        return jsonify(inmuebles_list), 200
-
-    except Exception as e:
-        # Se captura cualquier error que ocurra y se retorna con HTTP 500
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/inmuebles/<id>', methods=['GET']) # Ruta para ver un inmueble
-# utilizando su id
+@app.route('/inmuebles/<int:id>', methods=['GET'])
 @jwt_required()
-def get_inmueble_id(id: int) -> tuple[Response, int]:
+def ver_inmueble_por_id(id):
     """
-    Recupera los detalles de un inmueble específico por su ID desde la base de datos.
-
-    Solo los usuarios con rol de 'administrador' pueden acceder a esta ruta.
-    Si el inmueble no se encuentra, se devuelve un error 404.
-    En caso de error de conexión u otro fallo inesperado, se devuelve un error 500.
-
-    Parameters
-    ----------
-    id: int
-        Identificador único del inmueble a consultar.
-
-    Returns
-    -------
-    tuple[Response, int]
-        - Si el usuario tiene permisos y el inmueble existe:
-            JSON con los datos del inmueble y código de estado HTTP 200.
-        - Si el usuario no tiene permisos:
-            JSON con mensaje de error y código HTTP 403.
-        - Si el inmueble no existe:
-            JSON con mensaje de error y código HTTP 404.
-        - Si ocurre un error interno:
-            JSON con mensaje de error y código HTTP 500.
+    Devuelve el inmueble con el ID especificado.
+    Solo accesible para administradores.
     """
-    rol = get_jwt().get('rol').lower()
+    claims = get_jwt()
+    rol = claims.get('rol')
+
     if rol != 'administrador':
-        return jsonify({"error": "Acceso denegado, solo administradores pueden acceder"}), 403
+        return jsonify({"error": "No tienes permiso para ver este inmueble(Admin)"}), 403
 
-    try:
-        with sqlite3.connect('base_datos/base_datos.db') as conn:
-            conn.row_factory = sqlite3.Row # esto hace que las filas de la
-            # db se extraigan directamente como diccionarios.
-            cursor = conn.cursor()
+    inmueble = next((i for i in inmuebles if i.get_id() == id), None)
 
-            cursor.execute("SELECT * FROM Inmueble WHERE id = ?", (id,))
-            row = cursor.fetchone()
+    if inmueble is None:
+        return jsonify({"error": f"Inmueble con ID {id} no encontrado"}), 404
 
-            if row is None:
-                return jsonify({"error": "Inmueble no encontrado"}), 404
-
-            return jsonify(row), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-"""
-@app.route('/inmuebles/<int:id>', methods=['POST'])
-@jwt_required()
-def crear_publicacion() -> tuple[Response, int]:"""
-"""
-    Función que permite crear una nueva publicación.
-
-    Parámetros
-    ----------
-    inmueble
-        Representación JSON del Inmueble que se desea listar.
-    precio : float
-        Precio con el que listar el inmueble.
-    descripcion : Optional[str]
-        Descripción opcional del inmueble.
-
-    Devuelve
-    -----------
-    tuple[Response, int]:
-        Representación de la publicación junto con HTTP 200 si la creación
-        fue exitosa.
-        En caso contrario, se devolverá un mensaje de error y HTTP 400.
-    """
-"""
-    rol = get_jwt().get('rol').lower()
-    if rol != 'administrador' and rol != 'vendedor':
-        return (jsonify({"error": "Sólo vendedores o admin pueden añadir "
-                                  "nuevos inmuebles"}), 403)
-
-    data = request.get_json()
-    inmueble_usuario = data['inmueble']
-    precio_listado = data['precio']
-    descripcion = data['descripcion']
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    if not inmueble_usuario or not precio_listado:
-        return jsonify({'error': 'Faltan parámetros'}), 400
-
-    # Comprobar que el inmueble que se intenta listar existe.
-    with (sqlite3.connect('base_datos/base_datos.db') as conn):
-        conn.row_factory = sqlite3.Row  # esto hace que las filas de la
-        # db se extraigan directamente como diccionarios.
-        cursor = conn.cursor()
-
-        cursor.execute('SELECT * FROM Inmueble WHERE id = ?',
-                       (inmueble_usuario['id'],))
-        inmueble_db = cursor.fetchone()
-
-        if inmueble_db is None:
-            return jsonify({'error': 'El inmueble que se ha intentado '
-                                     'publicar no existe en la base de '
-                                     'datos'}), 400
-    """
-
-
-@app.route('/inmuebles', methods=['POST'])
-@jwt_required()
-def crear_inmueble() -> tuple[Response, int]:
-    """
-    Método que permite crear un nuevo inmueble.
-
-    Parámetros
-    ----------
-    - habitaciones : list[dict]
-        Lista de habitaciones que conforman el inmueble.
-        Cada habitación debe ser un diccionario con la clave 'superficie',
-        'tipo' y claves adicionales en función del tipo, correspondientes a
-        los atributos del mismo (ver ``modelos_datos/modelo_relacional.sql``).
-    - zona : Optional[str]
-        Zona geográfica en la que se encuentra el inmueble.
-
-    Devuelve
-    -----------
-    tuple[Response, int]:
-        - JSON con la representación del inmueble y HTTP 201 si la creación
-          fue exitosa.
-        - JSON con mensaje de error y código HTTP 4XX/5XX en caso de fallo.
-    """
-    # Verificamos los permisos del usuario.
-    rol = get_jwt().get('rol').lower()
-    if rol not in ['administrador',
-                   'vendedor']:
-        return jsonify({"error": "Sólo vendedores o admin pueden añadir "
-                                 "nuevos inmuebles"}), 403
-
-    # Extraemos la data del request.
-    data = request.get_json()
-    lista_habitaciones = data.get('habitaciones')
-    zona = data.get('zona')
-
-    # Verificamos que se haya proporcionado la información necesaria.
-    if not lista_habitaciones:
-        return jsonify({'error': 'Faltan parámetros'}), 400
-
-    # Determinamos el dueño.
-    owner = get_jwt_identity()
-
-    try:
-        with sqlite3.connect('base_datos/base_datos.db') as conn:
-            cursor = conn.cursor()
-
-            # Insertamos el inmueble especificando las columnas.
-            # CHANGE: Se corrige la sintaxis y se incluye el nombre del propietario.
-            cursor.execute("""
-                INSERT INTO Inmueble (zona, nombre_propietario)
-                VALUES (?, ?)
-            """, (zona, owner))
-
-            # Obtenemos el id del inmueble recién insertado.
-            inmueble_id = cursor.lastrowid
-
-            # Insertamos cada una de las habitaciones vinculadas a este inmueble.
-            for i, hab in enumerate(lista_habitaciones,
-                                    start=1):
-                superficie = hab.get('superficie')
-                if superficie is None:
-                    return jsonify({
-                                       'error': 'Falta la superficie en una habitación'}), 400
-                cursor.execute("""
-                    INSERT INTO Habitacion (id, id_inmueble, superficie)
-                    VALUES (?, ?, ?)
-                """, (i, inmueble_id, superficie))
-
-            conn.commit() 
-    except sqlite3.Error as e:
-        return jsonify({'error': f'Error en la base de datos: {str(e)}'}), 500
-
-    # Preparamos la respuesta con la información del nuevo inmueble.
-    nuevo_inmueble = {"id": inmueble_id, "zona": zona,
-        "nombre_propietario": owner, "habitaciones": lista_habitaciones}
-
-    return jsonify({'mensaje': 'Inmueble añadido correctamente',
-        'inmueble': nuevo_inmueble}), 201
+    resultado = {
+        "id": inmueble.get_id(),
+        "nombre": inmueble.nombre,
+        "precio": inmueble.precio,
+        "zona": inmueble.zona.nombre,
+        "duenyo": inmueble.duenyo.nombre,
+        "direccion": inmueble.direccion,
+        "habitaciones": [str(h) for h in inmueble.habitaciones]
+    }
+    return jsonify(resultado), 200
 
 @app.route('/inmuebles/<int:id>', methods=['PUT'])
 @jwt_required()
@@ -471,44 +228,128 @@ def actualizar_inmueble(id: int):
         inmueble._Inmueble__zona = datos['zona']  # Idealmente asignar un objeto ZonaGeografica
 
     return jsonify({"mensaje": f"Inmueble {id} actualizado correctamente"}), 200
-
-
-'''
-SQL (AUN NO MODIFICADA)
-'''
-@app.route('/inmuebles/<id>', methods=['DELETE'])#Ruta para eliminar un inmueble por su id
+@app.route('/inmuebles/<int:id>', methods=['DELETE'])
 @jwt_required()
-def eliminar_inmueble(id:int):
-    """
-    Función para eliminar un inmueble existente
-
-    Parámetros
-    --------------
-    -id: int
-        ID del inmueble que queremos borrar
-
-    Devuélve
-    ---------------
-    -Una tupla que muestra si el inmueble es encontrado y eliminado correctamente o si no se
-        ha encontrado
-
-    -código de estado: 200 si la solicitud funciona sin ningún problema
-                       404 si la solicitud tiene algún problema
-    """
-
+def eliminar_inmueble(id: int):
     rol = get_jwt().get('rol')
     if rol not in ['vendedor', 'administrador']:
         return jsonify({"error": "No tienes permiso para eliminar inmuebles"}), 403
 
-    if id in inmuebles:
-        del inmuebles[id]
+    print(f"Intentando eliminar inmueble con ID: {id}")
+    print("Lista de inmuebles y sus IDs:")
+    for inmueble in inmuebles:
+        print(f"ID inmueble: {inmueble.get_id()}")
+
+    inmueble_encontrado = None
+    for inmueble in inmuebles:
+        if inmueble.get_id() == id:
+            inmueble_encontrado = inmueble
+            break
+
+    if inmueble_encontrado:
+        inmuebles.remove(inmueble_encontrado)
         return jsonify({"mensaje": f"Inmueble {id} eliminado"}), 200
     else:
         return jsonify({"error": f"Inmueble {id} no encontrado"}), 404
 
-'''
-A PARTIR DE AQUI REVISAR EL CODIGO QUE FALTA--------
-'''
+@app.route('/inmuebles', methods=['POST'])
+@jwt_required()
+def anyadir_inmuebles():
+    rol = get_jwt().get('rol')
+    if rol not in ['administrador', 'vendedor']:
+        return jsonify({"error": "No tienes permiso para añadir inmuebles"}), 403
+
+    # Obtener datos JSON
+    datos = request.get_json(force=True, silent=True)
+    if not datos:
+        return jsonify({'error': 'Datos JSON inválidos o no enviados'}), 400
+
+    tipo = datos.get('tipo')
+    if not tipo:
+        return jsonify({'error': 'Falta el campo tipo (piso o vivienda_unifamiliar)'}), 400
+
+    campos_basicos = ['nombre', 'descripcion', 'habitaciones', 'precio', 'zona', 'duenyo']
+    if not all(campo in datos for campo in campos_basicos):
+        return jsonify({'error': f'Faltan campos básicos: {campos_basicos}'}), 400
+
+    # Buscar zona y dueño en tus datos
+    zona = zonas.get(datos['zona'])
+    if not zona:
+        return jsonify({'error': f'Zona {datos["zona"]} no encontrada'}), 400
+
+    duenyo = next((v for v in vendedores if v.nombre == datos['duenyo']), None)
+    if not duenyo:
+        return jsonify({'error': f'Dueño {datos["duenyo"]} no encontrado'}), 400
+
+    # Procesar habitaciones
+    habitaciones_json = datos['habitaciones']
+    habitaciones_obj = []
+    for hab in habitaciones_json:
+        tipo_hab = hab.get('tipo')
+        superficie = hab.get('superficie')
+        if tipo_hab == 'dormitorio':
+            habitaciones_obj.append(Dormitorio(superficie,
+                                              hab.get('tiene_cama', False),
+                                              hab.get('tiene_lampara', False),
+                                              hab.get('tiene_mesa_estudio', False)))
+        elif tipo_hab == 'cocina':
+            habitaciones_obj.append(Cocina(superficie,
+                                          hab.get('tiene_frigorifico', False),
+                                          hab.get('tiene_horno', False),
+                                          hab.get('tiene_microondas', False),
+                                          hab.get('tiene_fregadero', False),
+                                          hab.get('tiene_mesa', False)))
+        elif tipo_hab == 'banyo':
+            habitaciones_obj.append(Banyo(superficie,
+                                         hab.get('tiene_ducha', False),
+                                         hab.get('tiene_banyera', False),
+                                         hab.get('tiene_vater', False),
+                                         hab.get('tiene_lavabo', True)))
+        elif tipo_hab == 'salon':
+            habitaciones_obj.append(Salon(superficie,
+                                         hab.get('tiene_televisor', False),
+                                         hab.get('tiene_sofa', False),
+                                         hab.get('tiene_mesa_recreativa', False)))
+        else:
+            return jsonify({'error': f'Tipo de habitación {tipo_hab} no reconocido'}), 400
+
+    # Crear inmueble según tipo
+    if tipo == 'piso':
+        planta = datos.get('planta')
+        ascensor = datos.get('ascensor', False)
+        inmueble = Piso(
+            datos['nombre'],
+            habitaciones_obj,
+            zona,
+            datos['descripcion'],
+            datos['precio'],
+            duenyo,
+            datos.get('direccion', ''),  # Usa datos['direccion'] si existe, si no, cadena vacía
+            planta,
+            ascensor
+            )
+    elif tipo == 'vivienda_unifamiliar':
+        tiene_piscina = datos.get('tiene_piscina', False)
+        jardin = datos.get('jardin', None)
+        inmueble = ViviendaUnifamiliar(
+            duenyo=duenyo,
+            descripcion=datos['descripcion'],
+            precio=datos['precio'],
+            nombre=datos['nombre'],
+            direccion=datos.get('direccion', ''),
+            habitaciones=habitaciones_obj,
+            zona=zona,
+            tiene_piscina=tiene_piscina,
+            jardin=jardin
+        )
+    else:
+        return jsonify({'error': f'Tipo de inmueble {tipo} no válido'}), 400
+
+    inmuebles.append(inmueble)
+    zona.agregar_inmueble(inmueble)
+
+    return jsonify({'mensaje': 'Inmueble añadido correctamente',
+                    'inmueble': inmueble.to_dict()}), 201
 @app.route('/inmueble/<int:id>/escribir', methods=['POST'])
 def escribir_comentario(id):
     """
@@ -516,12 +357,12 @@ def escribir_comentario(id):
 
     Parámetros
     ----------
-    id : int
+    id: int
         El identificador del inmueble para el cual se desea agregar el comentario.
 
     Datos del cuerpo de la solicitud:
     -------------------------------
-    comentario : str
+    comentario: str
         El comentario que el usuario desea dejar.
 
     Respuesta
@@ -539,131 +380,52 @@ def escribir_comentario(id):
 
     return jsonify({"message": "Comentario agregado con éxito!"}), 200
 
-@app.route('/inmueble/<id>/comentarios',methods=['GET'])
-def mostrar_comentarios(id: int) -> tuple[Response, int]:
+@app.route('/inmuebles/<int:id>/comentarios', methods=['GET'])
+def ver_comentarios(id):
     """
-    Muestra los comentarios asociados a un inmueble basado en su tipo (casa o piso).
+    Devuelve 5 comentarios aleatorios asociados a un inmueble según su tipo y
+    también los comentarios escritos por usuarios para ese inmueble.
 
-    Según el tipo de inmueble (determinado por la presencia de jardín o piscina),
-    se seleccionan 5 comentarios aleatorios de la lista correspondiente.
+    Parámetros:
+    -----------
+    id : int
+        ID del inmueble.
 
-    Parámetros
+    Respuesta:
     ----------
-    id: int
-        El identificador único del inmueble.
-
-    Excepciones
-    ------------
-    Si el inmueble con el ID proporcionado no existe, se genera una respuesta de error con un código 404.
-    Si ocurre un error con la base de datos, se genera un error 500.
-
-    Devuelve
-    --------
-    tuple
-        Una tupla que contiene:
-        - un diccionario con los detalles del inmueble, incluyendo su tipo y los comentarios aleatorios seleccionados.
-        - un código de estado HTTP (200 si todo está correcto, 404 si no se encuentra el inmueble, 500 en caso de error).
+    JSON con la lista de comentarios y código 200 si existe.
+    JSON con error y código 404 si no existe el inmueble.
     """
-    try:
-        with sqlite3.connect('base_datos/base_datos.db') as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
 
-            cursor.execute("SELECT * FROM inmuebles WHERE id = ?", (id,))
-            inmueble = cursor.fetchone()
+    # Buscar el inmueble manualmente para evitar usar next()
+    inmueble_encontrado = None
+    for inmueble in inmuebles:
+        if inmueble.get_id() == id:
+            inmueble_encontrado = inmueble
+            break
 
-            if not inmueble:
-                return jsonify({"error": "Inmueble no encontrado."}), 404
+    if inmueble_encontrado is None:
+        return jsonify({"error": "Inmueble no encontrado"}), 404
 
-            tipo = 'casa' if inmueble['jardin'] or inmueble['tiene_piscina'] else 'piso'
+    # Comentarios ya escritos por usuarios para este inmueble
+    comentarios_usuario_inmueble = [c['comentario'] for c in comentarios_usuario if c['inmueble_id'] == id]
 
-
-            cursor.execute(
-                "SELECT texto FROM comentarios WHERE tipo = ? ORDER BY RANDOM() LIMIT 5",
-                (tipo,)
-            )
-            comentarios = [row['texto'] for row in cursor.fetchall()]
-
-            cursor.execute(
-                "SELECT texto FROM comentarios_usuario WHERE inmueble_id = ?",
-                (id,)
-            )
-            comentarios_usuario = [row['texto'] for row in cursor.fetchall()]
-
-            respuesta = {
-                "id": inmueble['id'],
-                "tipo": tipo,
-                "comentarios": comentarios,
-                "comentarios_usuario": comentarios_usuario
-            }
-
-            return jsonify(respuesta), 200
-
-    except sqlite3.Error as err:
-        return jsonify({
-            "error": "Error al acceder a la base de datos.",
-            "message": str(err)
-        }), 500
-
-'''
-Cuando se termine implemento mi api de descripciones mediante IA
-'''
-
-"""
-def deepseek_generatecontent(tipo, habitaciones):
-    # Generar un número aleatorio de metros dentro de un rango razonable
-    dimensiones = random.randint(50, 150)  # Puedes ajustar el rango según tus necesidades
-
-    # Generar el mensaje para Deepseek, todos los inmuebles son nuevos
-    message = client.chat.completions.create(model="deepseek-chat",
-        messages=[
-                    {"role": "system", "content": "Eres un asistente inmobiliario"},
-                    {"role": "user","content": f"Genera un comentario aleatorio acerca de un {tipo} nuevo a la venta. El inmueble tiene {habitaciones} habitaciones y {dimensiones} metros cuadrados. Debe ser un comentario que imite un anuncio inmobiliario de carácter corto, de unos 200 caracteres máximo. No añadas hashtags ni la longitud del mensaje en la respuesta."},
-                    ],
-                    stream=False)
-    return message.choices[0].message.content
-
- client = OpenAI(api_key="sk-02fe7bac884b43478829814148287e55", base_url="https://api.deepseek.com")
-"""
-
-app.config['ULTIMO_TIEMPO_DESCRIPCION'] = 0
-@app.route('/inmueble/<id>/descripcion',methods=['GET'])
-def mostrar_descripcion(id:int):
-
-
-    if id not in inmuebles:
-        return {'error': 'Inmueble no encontrado'}, 404
-
-
-    inmueble = inmuebles[id]
-    habitaciones = inmueble.get('habitaciones', 0)
-    piscina = inmueble.get('piscina', None)
-    jardin = inmueble.get('jardin', None)
-
-
-    if piscina or jardin:
-        tipo = 'casa'
+    # Comentarios aleatorios según tipo de inmueble
+    if inmueble_encontrado.tipo() == "piso":
+        comentarios_aleatorios = random.sample(comentarios_pisos, k=min(5, len(comentarios_pisos)))
+    elif inmueble_encontrado.tipo() == "vivienda unifamiliar":
+        comentarios_aleatorios = random.sample(comentarios_casas, k=min(5, len(comentarios_casas)))
     else:
-        tipo = 'piso'
+        comentarios_aleatorios = []
 
-        # Comprobación de tiempo de espera
-        tiempo_actual = time.time()
-        ultimo_tiempo = app.config.get('ULTIMO_TIEMPO_DESCRIPCION', 0)
-        espera = 600  # 10 minutos = 600 segundos
+    # Combinar comentarios, evitar duplicados usando set
+    comentarios_combinados = list(set(comentarios_aleatorios + comentarios_usuario_inmueble))
 
-        if (tiempo_actual - ultimo_tiempo) < espera:
-            tiempo_restante = int(espera - (tiempo_actual - ultimo_tiempo))
-            return jsonify(
-                {"error": f"Debes esperar {tiempo_restante} segundos antes de generar otra descripción."}), 429
+    return jsonify({
+        "id_inmueble": id,
+        "comentarios": comentarios_combinados
+    }), 200
 
-        # Actualizar el tiempo de última generación
-        app.config['ULTIMO_TIEMPO_DESCRIPCION'] = tiempo_actual
-
-
-    #descripcion = deepseek_generatecontent(tipo, habitaciones)
-
-
-    return {"descripcion": None}, 200
 
 if __name__ == '__main__':
     app.run(debug=True)

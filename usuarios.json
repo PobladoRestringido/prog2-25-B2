@@ -1,0 +1,17 @@
+{
+    "ana": {
+        "nombre": "ana",
+        "contrasenya": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+        "rol": "comprador"
+    },
+    "jose": {
+        "nombre": "jose",
+        "contrasenya": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "rol": "vendedor"
+    },
+    "admin": {
+        "nombre": "admin",
+        "contrasenya": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+        "rol": "admin"
+    }
+}

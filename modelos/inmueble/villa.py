@@ -27,7 +27,7 @@ class Villa(Inmueble):
     superficie_terreno : float
         tamaño del terreno en metros cuadrados
     """
-    def __init__(self, nombre : str, descripcion: str, habitaciones: list['Habitacion'], precio : float, zona : 'ZonaGeografica', duenyo : 'Persona', tiene_piscina : bool = False, superficie_terreno : float = 0.0) -> None:
+    def __init__(self, nombre : str, descripcion: str, habitaciones: list['Habitacion'], precio : float, zona : 'ZonaGeografica', duenyo : 'Persona', direccion:str, tiene_piscina : bool = False, superficie_terreno : float = 0.0) -> None:
         """
         Parámetros
         ----------
@@ -51,6 +51,7 @@ class Villa(Inmueble):
         super().__init__(nombre, descripcion, habitaciones, precio, zona, duenyo)
         self.__tiene_piscina = tiene_piscina
         self.__superficie_terreno = superficie_terreno
+        self.direccion = direccion
 
     @property
     def tiene_piscina(self) -> bool:
