@@ -18,7 +18,7 @@ class ZonaGeografica:
         Lista de inmuebles ubicados en esta zona.
     """
 
-    def __init__(self, nombre: str, pais: str, inmuebles: List['Inmueble']=None) -> None:
+    def __init__(self, nombre: str, pais: str, inmuebles: List['Inmueble'] = None) -> None:
         """
         Inicializa una nueva instancia de la clase ZonaGeografica.
 
@@ -35,17 +35,23 @@ class ZonaGeografica:
         """
         self.__nombre = nombre
         self.__pais = pais
-        self.__inmuebles = inmuebles
+        if inmuebles is None:
+            self.__inmuebles = []
+        else:
+            self.__inmuebles = inmuebles
+
+    def agregar_inmueble(self, inmueble):
+        self.__inmuebles.append(inmueble)
 
     def __str__(self):
-        return f"{self.__nombre} ({self.__pais})"
+            return f"{self.__nombre} ({self.__pais})"
 
     def to_dict(self):
-        return {
-            "nombre": self.__nombre,
-            "pais": self.__pais,
-            "inmuebles": [inmueble.nombre for inmueble in self.__inmuebles]  # solo los nombres
-        }
+            return {
+                "nombre": self.__nombre,
+                "pais": self.__pais,
+                "inmuebles": [inmueble.nombre for inmueble in self.__inmuebles]  # solo los nombres
+            }
 
     @property
     def nombre(self):
@@ -59,6 +65,5 @@ class ZonaGeografica:
     def inmuebles(self):
         return self.__inmuebles
 
-    def agregar_inmueble(self, inmueble):
-        self.__inmuebles.append(inmueble)
+
 

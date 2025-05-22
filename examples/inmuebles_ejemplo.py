@@ -5,6 +5,7 @@ from modelos.habitacion.banyo import Banyo
 from modelos.habitacion.salon import Salon
 from modelos.inmueble.piso import Piso
 from modelos.inmueble.vivienda_unifamiliar import ViviendaUnifamiliar
+from modelos.zona_geografica import ZonaGeografica
 
 from examples.Zonas_ejemplo import zonas
 from examples.vendedor_ejemplo import vendedores
@@ -193,7 +194,6 @@ casa5 = ViviendaUnifamiliar(
     tiene_piscina=True,
     jardin="Jardín con vegetación autóctona"
 )
-
 
 # Añadir inmuebles a las zonas correspondientes
 zonas["centro_madrid"].agregar_inmueble(piso1)

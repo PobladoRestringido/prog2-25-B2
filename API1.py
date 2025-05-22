@@ -10,14 +10,13 @@ from modelos.habitacion.banyo import Banyo
 from modelos.habitacion.salon import Salon
 from modelos.usuario.usuario import usuarios
 from modelos.usuario.usuario import Usuario
+import random
 
 from examples.inmuebles_ejemplo import inmuebles
 from examples.vendedor_ejemplo import vendedores
 from examples.Zonas_ejemplo import zonas
 
 
-
-import random
 
 from flask import Flask, jsonify, request, Response
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -34,126 +33,59 @@ def casa():
        Función de inicio de la API. Esta función maneja la ruta raíz y
        devuelve un mensaje de bienvenida.
 
-       Devuélve
-       --------------
-        -str: Un mensaje de texto dando la bienvenida a la API.
-    """
-    return 'Bienvenido a la API de inmuebles'
-
-
-
-
-<<<<<<< HEAD
-ARCHIVO_USUARIOS = "usuarios.json"
-
-
-usuarios_de_prueba = {
-    "ana": Usuario("ana", "1234", "comprador"),
-    "jose": Usuario("jose", "abcd", "vendedor"),
-    "admin": Usuario("admin", "admin", "admin"),
-   "laura": Usuario("laura", "pass123", "comprador"),
-    "carlos": Usuario("carlos", "venta2025", "vendedor"),
-    "maria": Usuario("maria", "secure456", "comprador"),
-    "luis": Usuario("luis", "vendiendo123", "vendedor"),
-    "sofia": Usuario("sofia", "clave789", "comprador"),
-    "raul": Usuario("raul", "adminpass", "admin"),
-    "elena": Usuario("elena", "pass321", "vendedor")
-}
-
-
-def guardar_usuarios(usuarios):
-    data = {nombre: usuario.to_dict() for nombre, usuario in usuarios.items()}
-    with open(ARCHIVO_USUARIOS, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-def cargar_usuarios():
-    """Carga usuarios desde archivo JSON, si no existe devuelve dict vacío"""
-    if not os.path.exists(ARCHIVO_USUARIOS):
-        return {}
-
-    try:
-        with open(ARCHIVO_USUARIOS, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, IOError):
-        # En caso de error leyendo el archivo, devolver dict vacío
-        return {}
-
-    usuarios = {}
-    for nombre, info in data.items():
-        usuarios[nombre] = Usuario(
-            nombre=info["nombre"],
-            contrasenya=info["contrasenya"],
-            rol=info["rol"],
-            contrasenya_en_hash=True
-        )
-    return usuarios
-
-# Si no existe el archivo, lo creamos con los usuarios por defecto
-if not os.path.exists(ARCHIVO_USUARIOS):
-    guardar_usuarios(usuarios_de_prueba)
-
-# Ahora cargamos los usuarios (del archivo ya existente o recién creado)
-usuarios_registrados = cargar_usuarios()
-
-
-app = Flask(__name__) #Creamos la aplicación Flask
-app.config['JWT_SECRET_KEY'] = 'clave_super_secreta'  #Clave para autentificar
-jwt = JWTManager(app)
-
-
-@app.route('/') #Ruta inicial de la api
-def casa():
-    """
-       Función de inicio de la API. Esta función maneja la ruta raíz y
-       devuelve un mensaje de bienvenida.
-
        Devuelve
        --------------
         -str: Un mensaje de texto dando la bienvenida a la API.
     """
     return 'Bienvenido a la API de inmuebles'
 
-'''
-COPIAR
-'''
+#Funcion implementada por Sama
 @app.route('/register', methods=['POST'])
-def register():
+def registrar_usuario():
+    """
+    Registra un nuevo usuario si el nombre no está en uso.
+
+    Parámetros JSON esperados:
+    - nombre: str
+    - contrasenya: str
+    - rol: str (por ejemplo: 'comprador', 'vendedor', 'administrador')
+
+    Retorna:
+    - JSON con info del usuario y 201 si es exitoso
+    - JSON con error y 409 si el nombre ya existe
+    - JSON con error y 400 si falta algún dato o rol inválido
+    """
+
     data = request.get_json()
     nombre = data.get('nombre')
     contrasenya = data.get('contrasenya')
     rol = data.get('rol')
 
     if not nombre or not contrasenya or not rol:
-        return jsonify({"msg": "Faltan datos para registro"}), 400
+        return jsonify({'error': 'Faltan campos obligatorios (nombre, contrasenya, rol)'}), 400
 
-    if nombre in usuarios_registrados:
-        return jsonify({"msg": "El usuario ya existe"}), 409
+    # Verificar que no exista ya un usuario con ese nombre
+    for usuario in usuarios_registrados:
+        if usuario.nombre == nombre:
+            return jsonify({'error': 'El nombre de usuario ya está en uso.'}), 409
 
-    nuevo_usuario = Usuario(nombre, contrasenya, rol)
-    usuarios_registrados[nombre] = nuevo_usuario
-    guardar_usuarios(usuarios_registrados)
+    # Crear el usuario según rol
+    if rol == "comprador":
+        nuevo_usuario = Comprador(nombre, contrasenya)
+    elif rol == "vendedor":
+        nuevo_usuario = Vendedor(nombre, contrasenya)
+    elif rol == "administrador":
+        nuevo_usuario = Administrador(nombre, contrasenya)
+    else:
+        return jsonify({'error': f"Rol '{rol}' no válido."}), 400
 
-    return jsonify({"msg": f"Usuario {nombre} registrado correctamente"}), 201
+    # Añadir el nuevo usuario a la lista de registrados
+    usuarios_registrados.append(nuevo_usuario)
 
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    nombre = data.get('nombre')
-    contrasenya = data.get('contrasenya')
-
-    if not nombre or not contrasenya:
-        return jsonify({"msg": "Faltan datos para iniciar sesión"}), 400
-
-    usuario = usuarios_registrados.get(nombre)
-
-    if not usuario or not usuario.verificar_contrasenya(contrasenya):
-        return jsonify({"msg": "Usuario o contraseña incorrectos"}), 401
-
-    access_token = create_access_token(identity={"nombre": usuario.nombre, "rol": usuario.rol})
-    return jsonify(access_token=access_token), 200
+    return jsonify({'mensaje': 'Usuario registrado correctamente', 'usuario': nuevo_usuario.to_dict()}), 201
 
 
+#Funcion implementada por Sama
 @app.route('/perfil', methods=['GET'])
 @jwt_required()
 def perfil():
@@ -170,14 +102,8 @@ El login usa los usuarios cargados del archivo.
 
 """
 
-=======
->>>>>>> 5ca6dcf17e947f79260e0931f521745fc8ceca97
 
 
-
-
-#--------------------------------------------------de aqui para abajo escribire mis apis--------------
-'''
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -196,7 +122,7 @@ def login():
             return jsonify({"access_token": access_token}), 200
 
     return jsonify({"error": "Nombre de usuario o contraseña incorrectos."}), 401
-'''
+
 @app.route('/inmuebles', methods=['GET'])
 def ver_inmuebles():
     """
@@ -392,22 +318,30 @@ def anyadir_inmuebles():
         planta = datos.get('planta')
         ascensor = datos.get('ascensor', False)
         inmueble = Piso(
-            datos['nombre'], 
-            habitaciones_obj, 
-            zona, 
-            datos['descripcion'], 
+            datos['nombre'],
+            habitaciones_obj,
+            zona,
+            datos['descripcion'],
             datos['precio'],
-            duenyo, 
-            datos.get('direccion', ''),  # Usa datos['direccion'] si existe, si no, cadena vacía 
-            planta, 
+            duenyo,
+            datos.get('direccion', ''),  # Usa datos['direccion'] si existe, si no, cadena vacía
+            planta,
             ascensor
             )
     elif tipo == 'vivienda_unifamiliar':
         tiene_piscina = datos.get('tiene_piscina', False)
         jardin = datos.get('jardin', None)
-        inmueble = ViviendaUnifamiliar(duenyo, datos['descripcion'], datos['precio'],
-                                       datos['nombre'], habitaciones_obj, zona,
-                                       tiene_piscina, jardin)
+        inmueble = ViviendaUnifamiliar(
+            duenyo=duenyo,
+            descripcion=datos['descripcion'],
+            precio=datos['precio'],
+            nombre=datos['nombre'],
+            direccion=datos.get('direccion', ''),
+            habitaciones=habitaciones_obj,
+            zona=zona,
+            tiene_piscina=tiene_piscina,
+            jardin=jardin
+        )
     else:
         return jsonify({'error': f'Tipo de inmueble {tipo} no válido'}), 400
 
@@ -445,6 +379,53 @@ def escribir_comentario(id):
     comentarios_usuario.append({"inmueble_id": id, "comentario": comentario})
 
     return jsonify({"message": "Comentario agregado con éxito!"}), 200
+
+@app.route('/inmuebles/<int:id>/comentarios', methods=['GET'])
+def ver_comentarios(id):
+    """
+    Devuelve 5 comentarios aleatorios asociados a un inmueble según su tipo y
+    también los comentarios escritos por usuarios para ese inmueble.
+
+    Parámetros:
+    -----------
+    id : int
+        ID del inmueble.
+
+    Respuesta:
+    ----------
+    JSON con la lista de comentarios y código 200 si existe.
+    JSON con error y código 404 si no existe el inmueble.
+    """
+
+    # Buscar el inmueble manualmente para evitar usar next()
+    inmueble_encontrado = None
+    for inmueble in inmuebles:
+        if inmueble.get_id() == id:
+            inmueble_encontrado = inmueble
+            break
+
+    if inmueble_encontrado is None:
+        return jsonify({"error": "Inmueble no encontrado"}), 404
+
+    # Comentarios ya escritos por usuarios para este inmueble
+    comentarios_usuario_inmueble = [c['comentario'] for c in comentarios_usuario if c['inmueble_id'] == id]
+
+    # Comentarios aleatorios según tipo de inmueble
+    if inmueble_encontrado.tipo() == "piso":
+        comentarios_aleatorios = random.sample(comentarios_pisos, k=min(5, len(comentarios_pisos)))
+    elif inmueble_encontrado.tipo() == "vivienda unifamiliar":
+        comentarios_aleatorios = random.sample(comentarios_casas, k=min(5, len(comentarios_casas)))
+    else:
+        comentarios_aleatorios = []
+
+    # Combinar comentarios, evitar duplicados usando set
+    comentarios_combinados = list(set(comentarios_aleatorios + comentarios_usuario_inmueble))
+
+    return jsonify({
+        "id_inmueble": id,
+        "comentarios": comentarios_combinados
+    }), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)

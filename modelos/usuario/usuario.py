@@ -50,6 +50,10 @@ class Usuario:
         """
         self.__nombre = nombre
         self.__rol= rol
+        if contrasenya_en_hash:
+            self.__contrasenya = contrasenya
+        else:
+            self.__contrasenya = self._encriptar_contrasenya(contrasenya)
 
     @property
     def nombre(self):
